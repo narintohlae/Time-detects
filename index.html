@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกเวลาเข้า-ออกงาน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        /* สไตล์สำหรับกล่องข้อความแจ้งเตือน */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+            transition: visibility 0s, opacity 0.5s linear;
+            opacity: 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .toast.success { background-color: #10B981; } /* สีเขียว */
+        .toast.error { background-color: #EF4444; }   /* สีแดง */
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">บันทึกเวลาทำงาน</h1>
+            <p class="text-gray-500">กรุณากรอกชื่อและเลือกการทำรายการ</p>
+        </div>
+
+        <!-- ฟอร์มสำหรับกรอกชื่อ -->
+        <div class="mb-6">
+            <label for="employeeName" class="block text-sm font-medium text-gray-700 mb-2">ชื่อพนักงาน</label>
+            <input type="text" id="employeeName" 
+                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                   placeholder="เช่น สมชาย ใจดี">
+        </div>
+
+        <!-- นาฬิกาแสดงเวลาปัจจุบัน -->
+        <div class="bg-gray-50 p-4 rounded-lg text-center mb-6 border border-gray-200">
+            <p class="text-sm text-gray-500 mb-1">เวลาปัจจุบัน</p>
+            <div id="clock" class="text-2xl font-semibold text-gray-800 font-mono">--:--:--</div>
+            <div id="date" class="text-sm text-gray-600 mt-1">--/--/----</div>
+        </div>
+
+        <!-- ปุ่มสำหรับลงเวลา -->
+        <div class="grid grid-cols-2 gap-4">
+            <button id="btnClockIn" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                เข้างาน
+            </button>
+            <button id="btnClockOut" 
+                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                ออกงาน
+            </button>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <p class="text-sm text-gray-500 mb-3 text-center">เมนูอื่นๆ</p>
+            <div class="grid grid-cols-2 gap-4">
+                <button id="btnRequestLeave" 
+                        class="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    แจ้งลางาน
+                </button>
+                <button id="btnRequestSwap" 
+                        class="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-sm transition-colors duration-200 flex items-center justify-center text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    สลับวันหยุด
+                </button>
+            </div>
+        </div>
+
+        <!-- กล่องแจ้งสถานะโหลดข้อมูล -->
+        <div id="loadingStatus" class="mt-4 text-center text-sm text-gray-500">
+            กำลังเชื่อมต่อระบบ...
+        </div>
+    </div>
+
+    <!-- Modal สำหรับส่งคำร้อง -->
+    <div id="requestModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h3 id="modalTitle" class="text-lg font-bold text-gray-800">ส่งคำร้อง</h3>
+                <button id="btnCloseModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <input type="hidden" id="requestType">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อพนักงาน</label>
+                    <input type="text" id="reqEmployeeName" readonly class="w-full px-3 py-2 bg-gray-100 rounded-md border border-gray-300 text-gray-600 cursor-not-allowed">
+                </div>
+                <div class="mb-4">
+                    <label id="dateLabel" class="block text-sm font-medium text-gray-700 mb-1">วันที่ต้องการลา</label>
+                    <input type="date" id="reqDate" class="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">เหตุผล / รายละเอียด</label>
+                    <textarea id="reqReason" rows="3" class="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
+                </div>
+                <button id="btnSubmitRequest" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg shadow-sm transition-colors duration-200">
+                    ยืนยันการส่งคำร้อง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- กล่อง Toast สำหรับแจ้งเตือน -->
+    <div id="toast" class="toast">ข้อความแจ้งเตือน</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // กำหนด App ID สำหรับใช้ในการเก็บข้อมูล
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-time-tracker-app';
+        let db;
+        let auth;
+        let isReady = false;
+
+        // ฟังก์ชันแสดงข้อความแจ้งเตือน
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => { toast.className = toast.className.replace('show', ''); }, 3000);
+        }
+
+        // ฟังก์ชันตั้งค่า Firebase
+        async function initFirebase() {
+            try {
+                // ตรวจสอบว่ามี config ไหม
+                if (typeof __firebase_config === 'undefined') {
+                    document.getElementById('loadingStatus').innerHTML = '<span class="text-red-500">ข้อผิดพลาด: ไม่พบการตั้งค่าฐานข้อมูล</span>';
+                    return;
+                }
+
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // พยายามล็อกอิน
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                isReady = true;
+                document.getElementById('loadingStatus').innerHTML = '<span class="text-green-500">ระบบพร้อมใช้งาน</span>';
+                
+                // ซ่อนข้อความพร้อมใช้งานหลังจาก 3 วินาที
+                setTimeout(() => {
+                    document.getElementById('loadingStatus').style.display = 'none';
+                }, 3000);
+
+            } catch (error) {
+                console.error("Firebase init error:", error);
+                document.getElementById('loadingStatus').innerHTML = '<span class="text-red-500">เกิดข้อผิดพลาดในการเชื่อมต่อระบบ</span>';
+            }
+        }
+
+        // เริ่มการเชื่อมต่อ Firebase
+        initFirebase();
+
+        // อัพเดทนาฬิกาทุกวินาที
+        function updateClock() {
+            const now = new Date();
+            
+            // จัดรูปแบบเวลา
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            // จัดรูปแบบวันที่ (พ.ศ.)
+            const day = String(now.getDate()).padStart(2, '0');
+            const monthNames = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            const month = monthNames[now.getMonth()];
+            const year = now.getFullYear() + 543;
+            document.getElementById('date').textContent = `${day} ${month} ${year}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // เรียกทันทีครั้งแรก
+
+        // ฟังก์ชันบันทึกเวลาลงฐานข้อมูล
+        async function recordTime(type) {
+            if (!isReady || !auth.currentUser) {
+                showToast("ระบบยังไม่พร้อมใช้งาน กรุณารอสักครู่", "error");
+                return;
+            }
+
+            const nameInput = document.getElementById('employeeName');
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                showToast("กรุณากรอกชื่อพนักงาน", "error");
+                nameInput.focus();
+                return;
+            }
+
+            try {
+                // ปิดปุ่มชั่วคราวเพื่อป้องกันการกดซ้ำ
+                const btnIn = document.getElementById('btnClockIn');
+                const btnOut = document.getElementById('btnClockOut');
+                btnIn.disabled = true;
+                btnOut.disabled = true;
+
+                // Path ข้อมูล (ใช้ข้อมูลสาธารณะเพื่อให้ฝั่งรายงานดึงไปดูได้)
+                // RULE 1: STRICT PATHS
+                const timeLogsRef = collection(db, 'artifacts', appId, 'public', 'data', 'timelogs');
+                
+                // สร้างข้อมูลที่จะบันทึก
+                const logData = {
+                    employeeName: name,
+                    type: type, // 'IN' หรือ 'OUT'
+                    timestamp: serverTimestamp(),
+                    clientTime: new Date().toISOString() // เผื่อไว้กรณี serverTimestamp ทำงานช้า
+                };
+
+                await addDoc(timeLogsRef, logData);
+
+                // แจ้งเตือนสำเร็จ
+                const actionText = type === 'IN' ? 'เข้างาน' : 'ออกงาน';
+                showToast(`บันทึกเวลา${actionText} สำหรับ ${name} เรียบร้อยแล้ว`, "success");
+                
+                // ล้างช่องกรอกชื่อ
+                nameInput.value = '';
+
+            } catch (error) {
+                console.error("Error saving time:", error);
+                showToast("เกิดข้อผิดพลาดในการบันทึกข้อมูล", "error");
+            } finally {
+                // เปิดปุ่มกลับมาใช้งานได้ปกติ
+                document.getElementById('btnClockIn').disabled = false;
+                document.getElementById('btnClockOut').disabled = false;
+            }
+        }
+
+        // ผูก Event Listener กับปุ่ม
+        document.getElementById('btnClockIn').addEventListener('click', () => recordTime('IN'));
+        document.getElementById('btnClockOut').addEventListener('click', () => recordTime('OUT'));
+
+        // ระบบคำร้อง (ลา / สลับวันหยุด)
+        const requestModal = document.getElementById('requestModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const dateLabel = document.getElementById('dateLabel');
+        const requestTypeInput = document.getElementById('requestType');
+        const reqEmployeeName = document.getElementById('reqEmployeeName');
+        const reqDate = document.getElementById('reqDate');
+        const reqReason = document.getElementById('reqReason');
+
+        function openModal(type) {
+            const nameInput = document.getElementById('employeeName').value.trim();
+            if (!nameInput) {
+                showToast("กรุณากรอกชื่อพนักงานก่อนทำรายการ", "error");
+                document.getElementById('employeeName').focus();
+                return;
+            }
+
+            reqEmployeeName.value = nameInput;
+            requestTypeInput.value = type;
+            reqDate.value = '';
+            reqReason.value = '';
+
+            if (type === 'LEAVE') {
+                modalTitle.textContent = 'แจ้งลางาน';
+                dateLabel.textContent = 'วันที่ต้องการลา';
+            } else if (type === 'SWAP') {
+                modalTitle.textContent = 'ขอสลับวันหยุด';
+                dateLabel.textContent = 'วันที่ต้องการสลับ (ระบุวันหยุดเดิม และวันที่จะมาทำแทนในเหตุผล)';
+            }
+
+            requestModal.classList.remove('hidden');
+        }
+
+        document.getElementById('btnRequestLeave').addEventListener('click', () => openModal('LEAVE'));
+        document.getElementById('btnRequestSwap').addEventListener('click', () => openModal('SWAP'));
+        
+        document.getElementById('btnCloseModal').addEventListener('click', () => {
+            requestModal.classList.add('hidden');
+        });
+
+        // ปิด modal เมื่อคลิกพื้นที่ว่าง
+        requestModal.addEventListener('click', (e) => {
+            if (e.target === requestModal) {
+                requestModal.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('btnSubmitRequest').addEventListener('click', async () => {
+            if (!isReady || !auth.currentUser) {
+                showToast("ระบบยังไม่พร้อมใช้งาน", "error");
+                return;
+            }
+
+            const name = reqEmployeeName.value.trim();
+            const type = requestTypeInput.value;
+            const dateStr = reqDate.value;
+            const reason = reqReason.value.trim();
+
+            if (!dateStr || !reason) {
+                showToast("กรุณากรอกวันที่และเหตุผลให้ครบถ้วน", "error");
+                return;
+            }
+
+            try {
+                const btnSubmit = document.getElementById('btnSubmitRequest');
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = 'กำลังส่งข้อมูล...';
+
+                // Path ข้อมูลสำหรับคำร้อง
+                const requestsRef = collection(db, 'artifacts', appId, 'public', 'data', 'requests');
+                
+                const requestData = {
+                    employeeName: name,
+                    type: type,
+                    requestDate: dateStr,
+                    reason: reason,
+                    status: 'PENDING', // PENDING, APPROVED, REJECTED
+                    timestamp: serverTimestamp(),
+                    clientTime: new Date().toISOString()
+                };
+
+                await addDoc(requestsRef, requestData);
+
+                showToast(`ส่งคำร้อง${type === 'LEAVE' ? 'ลางาน' : 'สลับวันหยุด'}เรียบร้อยแล้ว`, "success");
+                requestModal.classList.add('hidden');
+
+            } catch (error) {
+                console.error("Error saving request:", error);
+                showToast("เกิดข้อผิดพลาดในการส่งคำร้อง", "error");
+            } finally {
+                const btnSubmit = document.getElementById('btnSubmitRequest');
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'ยืนยันการส่งคำร้อง';
+            }
+        });
+
+    </script>
+</body>
+</html>
