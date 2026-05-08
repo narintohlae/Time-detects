@@ -3,108 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกเวลาและคำร้องพนักงาน</title>
+    <title>ระบบพนักงาน - เข้าสู่ระบบ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
         .tab-btn { border-bottom: 2px solid transparent; transition: all 0.2s; }
         .tab-btn.active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 600; }
-        
-        /* ซ่อน Scrollbar สำหรับเมนูแท็บแนวนอนบนมือถือ */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <!-- Message Box -->
-    <div id="message-box" class="hidden fixed top-4 right-4 left-4 md:left-auto bg-white shadow-lg border-l-4 p-4 rounded z-50 transition-all duration-300">
+    <div id="message-box" class="hidden fixed top-4 right-4 left-4 md:left-auto bg-white shadow-xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300">
         <p id="message-text" class="text-gray-800 font-medium"></p>
     </div>
 
-    <div class="bg-white p-6 md:p-8 rounded-xl shadow-md w-full max-w-md h-[600px] flex flex-col">
-        <h1 class="text-2xl font-bold text-center text-gray-800 mb-4">ระบบพนักงาน</h1>
-        
-        <!-- Tabs -->
-        <div class="flex border-b mb-6 overflow-x-auto hide-scrollbar whitespace-nowrap">
-            <button onclick="switchTab('time-tab')" id="btn-time-tab" class="tab-btn active flex-1 px-4 py-2 text-center text-sm md:text-base text-gray-600 focus:outline-none">ลงเวลา</button>
-            <button onclick="switchTab('request-tab')" id="btn-request-tab" class="tab-btn flex-1 px-4 py-2 text-center text-sm md:text-base text-gray-600 focus:outline-none">ส่งคำร้อง</button>
-            <button onclick="switchTab('history-tab')" id="btn-history-tab" class="tab-btn flex-1 px-4 py-2 text-center text-sm md:text-base text-gray-600 focus:outline-none">สถานะคำร้อง</button>
+    <!-- 1. หน้า Login (Numpad Mode) -->
+    <div id="login-view" class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-sm fade-in">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 tracking-wide">เข้าสู่ระบบ</h1>
+            <p id="auth-status" class="text-sm text-gray-500 mt-1">กำลังเชื่อมต่อระบบ...</p>
         </div>
 
-        <!-- เนื้อหา (ให้ขยายเต็มพื้นที่ที่เหลือและเลื่อนได้) -->
-        <div class="flex-1 overflow-y-auto pr-1">
+        <div class="space-y-6">
+            <!-- PIN Input Display -->
+            <div class="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 shadow-inner">
+                <input type="password" id="login-pin" readonly placeholder="กรอกรหัส 4 หลัก" class="w-full text-center text-3xl tracking-[0.8em] font-bold bg-transparent focus:outline-none text-blue-600">
+            </div>
+
+            <!-- Numpad -->
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="addPin('1')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">1</button>
+                <button onclick="addPin('2')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">2</button>
+                <button onclick="addPin('3')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">3</button>
+                <button onclick="addPin('4')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">4</button>
+                <button onclick="addPin('5')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">5</button>
+                <button onclick="addPin('6')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">6</button>
+                <button onclick="addPin('7')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">7</button>
+                <button onclick="addPin('8')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">8</button>
+                <button onclick="addPin('9')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">9</button>
+                <button onclick="clearPin()" class="h-16 text-lg font-bold bg-red-50 text-red-600 border border-red-100 rounded-2xl hover:bg-red-100 transition active:scale-95">ลบ</button>
+                <button onclick="addPin('0')" class="h-16 text-2xl font-bold bg-white border border-gray-200 rounded-2xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition active:scale-95">0</button>
+                <button onclick="login()" class="h-16 text-lg font-bold bg-blue-600 text-white rounded-2xl shadow-md hover:bg-blue-700 transition active:scale-95">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. หน้า Dashboard (ส่วนตัว) -->
+    <div id="main-view" class="hidden bg-white rounded-3xl shadow-2xl w-full max-w-md h-[700px] flex flex-col fade-in overflow-hidden relative border border-gray-100">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-6 text-white rounded-t-3xl flex justify-between items-center shadow-md relative z-10">
+            <div>
+                <p class="text-blue-100 text-sm mb-1">ยินดีต้อนรับ,</p>
+                <h2 id="user-display-name" class="text-2xl font-bold">ชื่อพนักงาน</h2>
+            </div>
+            <button onclick="logout()" id="btn-logout" class="bg-white/20 hover:bg-white/30 p-2.5 rounded-xl text-sm font-medium transition backdrop-blur-sm flex items-center shadow-sm">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                ออก
+            </button>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="flex border-b bg-gray-50 shadow-sm relative z-10">
+            <button onclick="switchTab('time-tab')" id="btn-time-tab" class="tab-btn active flex-1 px-2 py-4 text-center text-sm font-medium text-gray-600 focus:outline-none">ลงเวลา</button>
+            <button onclick="switchTab('request-tab')" id="btn-request-tab" class="tab-btn flex-1 px-2 py-4 text-center text-sm font-medium text-gray-600 focus:outline-none">ส่งคำร้อง</button>
+            <button onclick="switchTab('history-tab')" id="btn-history-tab" class="tab-btn flex-1 px-2 py-4 text-center text-sm font-medium text-gray-600 focus:outline-none">ประวัติของฉัน</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto bg-gray-50/50 p-6">
             
-            <!-- Section 1: ลงเวลา -->
-            <div id="time-tab" class="block h-full flex flex-col justify-center pb-10">
-                <div class="mb-8">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">1. เลือกชื่อของคุณ</label>
-                    <select id="employeeName" class="shadow border rounded-lg w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-lg">
-                        <option value="">-- กำลังโหลดรายชื่อ... --</option>
-                    </select>
+            <!-- Tab 1: ลงเวลา -->
+            <div id="time-tab" class="block h-full flex flex-col justify-center pb-8 fade-in">
+                <div class="text-center mb-10 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <p class="text-gray-500 mb-2 font-medium">เวลาปัจจุบัน</p>
+                    <h1 id="live-clock" class="text-5xl font-bold text-gray-800 tracking-wider">00:00</h1>
+                    <p id="live-date" class="text-blue-600 mt-2 text-sm font-medium"></p>
                 </div>
                 
-                <label class="block text-gray-700 text-sm font-bold mb-2">2. กดบันทึกเวลา</label>
                 <div class="flex flex-col space-y-4">
-                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow transition duration-200 disabled:opacity-50 text-lg">
+                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-emerald-500/30 transition duration-200 disabled:opacity-50 text-2xl tracking-wide flex items-center justify-center active:scale-95">
+                        <svg class="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                         เข้างาน
                     </button>
-                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl shadow transition duration-200 disabled:opacity-50 text-lg">
+                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-rose-500/30 transition duration-200 disabled:opacity-50 text-2xl tracking-wide flex items-center justify-center active:scale-95">
+                        <svg class="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                         ออกงาน
                     </button>
                 </div>
             </div>
 
-            <!-- Section 2: แจ้งลา/สลับวันหยุด -->
-            <div id="request-tab" class="hidden">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">เลือกชื่อพนักงาน</label>
-                    <select id="reqEmployeeName" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="">-- กรุณาเลือกชื่อ --</option>
-                    </select>
+            <!-- Tab 2: แจ้งลา/สลับวันหยุด -->
+            <div id="request-tab" class="hidden fade-in">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">ประเภทคำร้อง</label>
+                        <select id="reqType" class="shadow-sm border rounded-xl w-full py-3 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="ลากิจ">ลากิจ</option>
+                            <option value="ลาป่วย">ลาป่วย</option>
+                            <option value="ลาพักร้อน">ลาพักร้อน</option>
+                            <option value="สลับวันหยุด">สลับวันหยุด</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">วันที่ต้องการ (เริ่มต้น)</label>
+                        <input type="date" id="reqDate" class="shadow-sm border rounded-xl w-full py-3 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">เหตุผล / รายละเอียด</label>
+                        <textarea id="reqReason" rows="3" class="shadow-sm border rounded-xl w-full py-3 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุเหตุผลที่ขอลา..."></textarea>
+                    </div>
+                    <button onclick="submitRequest()" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-md transition duration-200 disabled:opacity-50">
+                        ส่งคำร้อง
+                    </button>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">ประเภทคำร้อง</label>
-                    <select id="reqType" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="ลากิจ">ลากิจ</option>
-                        <option value="ลาป่วย">ลาป่วย</option>
-                        <option value="ลาพักร้อน">ลาพักร้อน</option>
-                        <option value="สลับวันหยุด">สลับวันหยุด</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">วันที่ต้องการ (วันเริ่มต้น)</label>
-                    <input type="date" id="reqDate" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">เหตุผล / รายละเอียด</label>
-                    <textarea id="reqReason" rows="3" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุเหตุผลที่ขอลา หรือวันที่ต้องการสลับ..."></textarea>
-                </div>
-                <button onclick="submitRequest()" id="btn-submit-req" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow transition duration-200 disabled:opacity-50">
-                    ส่งคำร้อง
-                </button>
             </div>
 
-            <!-- Section 3: สถานะคำร้อง (ประวัติ) -->
-            <div id="history-tab" class="hidden flex flex-col h-full">
-                <div class="mb-4 sticky top-0 bg-white pt-2 pb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">เลือกชื่อเพื่อดูประวัติ</label>
-                    <select id="historyEmployeeName" onchange="renderHistory()" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="">-- กรุณาเลือกชื่อของคุณ --</option>
-                    </select>
+            <!-- Tab 3: ประวัติของฉัน -->
+            <div id="history-tab" class="hidden fade-in flex flex-col h-full">
+                <div class="flex bg-gray-200/80 p-1.5 rounded-xl mb-4">
+                    <button onclick="switchHistorySubTab('hist-time')" id="btn-hist-time" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-blue-600 transition">ประวัติลงเวลา</button>
+                    <button onclick="switchHistorySubTab('hist-req')" id="btn-hist-req" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">ประวัติคำร้อง</button>
                 </div>
                 
-                <div id="history-list" class="flex-1 space-y-3 pb-4">
-                    <div class="text-center text-gray-500 mt-10 text-sm">
-                        กรุณาเลือกชื่อของคุณเพื่อดูสถานะคำร้อง
-                    </div>
+                <div id="hist-time" class="flex-1 space-y-3 pb-4 block">
+                    <div id="my-time-list"></div>
+                </div>
+
+                <div id="hist-req" class="flex-1 space-y-3 pb-4 hidden">
+                    <div id="my-req-list"></div>
                 </div>
             </div>
 
         </div>
-
-        <div id="status" class="mt-4 text-center text-xs font-medium">กำลังเชื่อมต่อ...</div>
     </div>
 
     <!-- Firebase SDK -->
@@ -133,37 +169,60 @@
 
         let currentUser = null;
         let isReady = false;
-        let allRequests = []; // เก็บคำร้องทั้งหมดไว้กรองดูประวัติ
+        
+        let employeesData = [];
+        let allRequests = []; 
+        let allTimeRecords = [];
+        
+        let loggedInEmp = null; 
+        let autoLogoutTimer = null;
+
+        // Live Clock
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('live-clock').textContent = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            document.getElementById('live-date').textContent = now.toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }, 1000);
 
         // UI Utils
         window.showMessage = function(msg, isError = false) {
             const box = document.getElementById('message-box');
             const text = document.getElementById('message-text');
             text.textContent = msg;
-            box.className = `fixed top-4 right-4 left-4 md:left-auto shadow-lg border-l-4 p-4 rounded z-50 transition-all duration-300 ${isError ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`;
+            box.className = `fixed top-4 right-4 left-4 md:left-auto shadow-2xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300 ${isError ? 'bg-red-50 border-red-500 text-red-700' : 'bg-emerald-50 border-emerald-500 text-emerald-800'}`;
             box.classList.remove('hidden');
-            setTimeout(() => { box.classList.add('hidden'); }, 3000);
+            setTimeout(() => { box.classList.add('hidden'); }, 3500);
         };
 
         window.switchTab = function(tabId) {
+            cancelAutoLogout(); // ยกเลิกการเด้งออกอัตโนมัติหากเปลี่ยนแท็บ
+            
             ['time-tab', 'request-tab', 'history-tab'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
                 document.getElementById(`btn-${id}`).classList.remove('active');
             });
             document.getElementById(tabId).classList.remove('hidden');
             document.getElementById(`btn-${tabId}`).classList.add('active');
-
-            // หากกดมาหน้าประวัติ ให้เรนเดอร์ข้อมูลเลย
-            if(tabId === 'history-tab') {
-                renderHistory();
-            }
+            
+            if(tabId === 'history-tab') renderMyHistory();
         };
 
-        // Date Formatter
-        const formatDate = (timestamp) => {
-            if (!timestamp) return 'กำลังประมวลผล...';
+        window.switchHistorySubTab = function(tabId) {
+            document.getElementById('hist-time').classList.add('hidden');
+            document.getElementById('hist-req').classList.add('hidden');
+            document.getElementById('btn-hist-time').className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition";
+            document.getElementById('btn-hist-req').className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition";
+            
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-blue-600 transition";
+        };
+
+        const formatDate = (timestamp, includeTime = false) => {
+            if (!timestamp) return 'กำลังบันทึก...';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
+            let opts = { day: '2-digit', month: 'short', year: '2-digit' };
+            if(includeTime) opts = { ...opts, hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleString('th-TH', opts);
         };
 
         // Auth Init
@@ -175,8 +234,8 @@
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                console.error("Auth error:", error);
-                showMessage("เชื่อมต่อระบบล้มเหลว", true);
+                document.getElementById('auth-status').textContent = "❌ เชื่อมต่อระบบล้มเหลว";
+                document.getElementById('auth-status').classList.add("text-red-500");
             }
         }
 
@@ -184,155 +243,227 @@
             currentUser = user;
             if (user) {
                 isReady = true;
-                document.getElementById('status').textContent = "🟢 เชื่อมต่อระบบพร้อมใช้งาน";
-                document.getElementById('status').className = "mt-4 text-center text-xs font-medium text-green-600";
-                loadEmployees();
-                loadRequests(); // โหลดข้อมูลคำร้องเพื่อใช้แสดงประวัติ
+                document.getElementById('auth-status').innerHTML = '<span class="text-emerald-500 font-medium flex items-center justify-center mt-2"><div class="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></div> พร้อมใช้งาน</span>';
+                loadAllData();
             }
         });
 
         initAuth();
 
-        // 1. Load Employee Names
-        function loadEmployees() {
+        function loadAllData() {
             if (!currentUser) return;
-            const selects = [
-                document.getElementById('employeeName'),
-                document.getElementById('reqEmployeeName'),
-                document.getElementById('historyEmployeeName')
-            ];
             
+            // โหลดรายชื่อพนักงาน
             onSnapshot(collection(db, getPath('employees')), (snapshot) => {
-                let employees = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                employees.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+                employeesData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+            }, console.error);
 
-                const optionsHTML = employees.length > 0 
-                    ? `<option value="">-- เลือกชื่อพนักงาน --</option>` + employees.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('')
-                    : `<option value="">-- ไม่มีรายชื่อในระบบ --</option>`;
-                
-                // อัพเดท dropdown ทั้ง 3 จุด (โดยรักษาค่าเดิมที่เลือกไว้ถ้าเป็นไปได้)
-                selects.forEach(select => {
-                    const currentVal = select.value;
-                    select.innerHTML = optionsHTML;
-                    if(currentVal) select.value = currentVal;
-                });
-            }, (error) => console.error(error));
-        }
+            // โหลด Time Records
+            onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
+                allTimeRecords = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                allTimeRecords.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                if(loggedInEmp) renderMyHistory(); 
+            }, console.error);
 
-        // 2. Load Requests for History
-        function loadRequests() {
-            if (!currentUser) return;
+            // โหลด Requests
             onSnapshot(collection(db, getPath('requests')), (snapshot) => {
                 allRequests = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                // เรียงจากใหม่ไปเก่า
                 allRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                
-                // อัพเดทหน้าจอประวัติทันทีหากเปิดแท็บนั้นอยู่
-                if(!document.getElementById('history-tab').classList.contains('hidden')) {
-                    renderHistory();
-                }
-            }, (error) => console.error(error));
+                if(loggedInEmp) renderMyHistory(); 
+            }, console.error);
         }
 
-        // 3. Render History List
-        window.renderHistory = function() {
-            const selectedName = document.getElementById('historyEmployeeName').value;
-            const listContainer = document.getElementById('history-list');
-
-            if (!selectedName) {
-                listContainer.innerHTML = `<div class="text-center text-gray-500 mt-10 text-sm">กรุณาเลือกชื่อของคุณเพื่อดูสถานะคำร้อง</div>`;
-                return;
+        // --- Numpad & Login Logic ---
+        window.addPin = function(num) {
+            const input = document.getElementById('login-pin');
+            if (input.value.length < 4) {
+                input.value += num;
+                if (input.value.length === 4) {
+                    // Auto submit เมื่อครบ 4 หลัก
+                    setTimeout(login, 200); 
+                }
             }
-
-            // กรองข้อมูลเฉพาะของคนที่เลือก (Rule 2: Filter in memory)
-            const myRequests = allRequests.filter(req => req.name === selectedName);
-
-            if (myRequests.length === 0) {
-                listContainer.innerHTML = `<div class="text-center text-gray-500 mt-10 text-sm bg-gray-50 p-4 rounded-lg">คุณยังไม่มีประวัติการส่งคำร้อง</div>`;
-                return;
-            }
-
-            listContainer.innerHTML = myRequests.map(req => {
-                // กำหนดสีของป้ายสถานะ
-                let statusColor = 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-green-100 text-green-800 border-green-200';
-                if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-red-100 text-red-800 border-red-200';
-
-                return `
-                <div class="bg-white border rounded-lg p-3 shadow-sm hover:shadow transition">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <span class="font-bold text-gray-800">${req.type}</span>
-                            <span class="text-xs text-gray-500 ml-2">ส่งเมื่อ: ${formatDate(req.timestamp)}</span>
-                        </div>
-                        <span class="text-xs font-semibold px-2 py-1 rounded-md border ${statusColor}">
-                            ${req.status}
-                        </span>
-                    </div>
-                    <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">
-                        <span class="font-semibold text-gray-600">วันที่ขอ:</span> ${req.date} <br>
-                        <span class="font-semibold text-gray-600">เหตุผล:</span> ${req.reason}
-                    </div>
-                </div>
-                `;
-            }).join('');
         };
 
-        // Actions
-        window.recordTime = async function(type) {
-            if (!isReady) return showMessage("ระบบกำลังเชื่อมต่อ...", true);
+        window.clearPin = function() {
+            document.getElementById('login-pin').value = '';
+        };
 
-            const name = document.getElementById('employeeName').value;
-            if (!name) return showMessage("กรุณาเลือกชื่อก่อนบันทึกเวลา!", true);
+        window.login = function() {
+            const pin = document.getElementById('login-pin').value;
+            if(!pin || pin.length < 4) return showMessage("กรุณากดรหัสให้ครบ 4 หลัก", true);
+
+            // ค้นหาพนักงานจาก PIN 
+            // *หมายเหตุ: ถ้าไม่ได้ตั้งในระบบเก่า จะเป็น 1234
+            const emp = employeesData.find(e => (e.pin || '1234') === pin);
+            
+            if (emp) {
+                loggedInEmp = emp;
+                document.getElementById('user-display-name').textContent = loggedInEmp.name;
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('main-view').classList.remove('hidden');
+                switchTab('time-tab');
+                clearPin();
+                showMessage(`เข้าสู่ระบบสำเร็จ: ${loggedInEmp.name}`);
+            } else {
+                showMessage("รหัส PIN ไม่ถูกต้อง หรือไม่มีในระบบ", true);
+                clearPin();
+            }
+        };
+
+        window.logout = function() {
+            cancelAutoLogout();
+            loggedInEmp = null;
+            clearPin();
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+        };
+
+        window.cancelAutoLogout = function() {
+            if(autoLogoutTimer) {
+                clearInterval(autoLogoutTimer);
+                autoLogoutTimer = null;
+                const btnLogout = document.getElementById('btn-logout');
+                btnLogout.innerHTML = `<svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> ออก`;
+            }
+        };
+
+        // --- Render History ---
+        window.renderMyHistory = function() {
+            if (!loggedInEmp) return;
+
+            // 1. Time
+            const myTimes = allTimeRecords.filter(r => r.name === loggedInEmp.name);
+            const timeList = document.getElementById('my-time-list');
+            
+            if (myTimes.length === 0) {
+                timeList.innerHTML = `<div class="text-center text-gray-500 py-8 bg-white rounded-2xl shadow-sm border border-gray-100">ยังไม่มีประวัติการลงเวลา</div>`;
+            } else {
+                timeList.innerHTML = myTimes.map(record => `
+                    <div class="bg-white border border-gray-100 rounded-2xl p-4 flex justify-between items-center shadow-sm hover:shadow transition">
+                        <div class="flex items-center">
+                            <div class="w-3 h-12 rounded-full ${record.type === 'เข้างาน' ? 'bg-emerald-400' : 'bg-rose-400'} mr-4"></div>
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">${formatDate(record.timestamp, false).split(' ')[0]}</p>
+                                <p class="text-xl font-bold text-gray-800">${formatDate(record.timestamp, true).split(' ')[1]} น.</p>
+                            </div>
+                        </div>
+                        <span class="text-sm font-bold px-4 py-1.5 rounded-full ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                            ${record.type}
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            // 2. Request
+            const myReqs = allRequests.filter(req => req.name === loggedInEmp.name);
+            const reqList = document.getElementById('my-req-list');
+
+            if (myReqs.length === 0) {
+                reqList.innerHTML = `<div class="text-center text-gray-500 py-8 bg-white rounded-2xl shadow-sm border border-gray-100">ยังไม่มีประวัติการส่งคำร้อง</div>`;
+            } else {
+                reqList.innerHTML = myReqs.map(req => {
+                    let statusColor = 'bg-amber-100 text-amber-700 border-amber-200';
+                    if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                    if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-100 text-rose-700 border-rose-200';
+
+                    return `
+                    <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow transition">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <span class="font-bold text-gray-800 text-lg">${req.type}</span>
+                                <span class="text-xs text-gray-500 ml-2 block sm:inline mt-1 sm:mt-0 font-medium">ส่ง: ${formatDate(req.timestamp, false)}</span>
+                            </div>
+                            <span class="text-xs font-bold px-3 py-1.5 rounded-lg border ${statusColor}">
+                                ${req.status}
+                            </span>
+                        </div>
+                        <div class="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <span class="font-bold text-gray-500">วันที่ขอ:</span> <span class="font-medium">${req.date}</span> <br>
+                            <span class="font-bold text-gray-500">เหตุผล:</span> <span class="font-medium">${req.reason}</span>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            }
+        };
+
+        // --- Actions ---
+        window.recordTime = async function(type) {
+            if (!isReady || !loggedInEmp) return showMessage("ไม่พบข้อมูลผู้ใช้งาน", true);
 
             const btnId = type === 'เข้างาน' ? 'btn-in' : 'btn-out';
             const btn = document.getElementById(btnId);
-            btn.disabled = true; btn.innerHTML = "กำลังบันทึก...";
+            const originalText = btn.innerHTML;
+            btn.disabled = true; 
+            btn.innerHTML = `<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>`;
 
             try {
                 await addDoc(collection(db, getPath('time_records')), {
-                    name, type, timestamp: serverTimestamp(), userId: currentUser.uid
+                    name: loggedInEmp.name, 
+                    type: type, 
+                    timestamp: serverTimestamp(), 
+                    userId: currentUser.uid
                 });
-                showMessage(`บันทึก${type}สำเร็จ!`);
-                document.getElementById('employeeName').value = '';
+                
+                showMessage(`บันทึกเวลา${type} สำเร็จ!`);
+                switchTab('history-tab'); 
+                
+                // ระบบเด้งออกอัตโนมัติภายใน 3 วินาที เพื่อให้คิวต่อไปใช้งานได้เลย
+                let countdown = 3;
+                const btnLogout = document.getElementById('btn-logout');
+                
+                autoLogoutTimer = setInterval(() => {
+                    countdown--;
+                    if(countdown <= 0) {
+                        logout();
+                    } else {
+                        btnLogout.innerHTML = `<span class="text-rose-200 font-bold">ออกอัตโนมัติ (${countdown})</span>`;
+                    }
+                }, 1000);
+
             } catch (error) {
-                showMessage("บันทึกข้อมูลล้มเหลว", true);
+                showMessage("บันทึกข้อมูลล้มเหลว กรุณาลองใหม่", true);
             } finally {
-                btn.disabled = false; btn.innerHTML = type;
+                btn.disabled = false; 
+                btn.innerHTML = originalText;
             }
         };
 
         window.submitRequest = async function() {
-            if (!isReady) return;
+            if (!isReady || !loggedInEmp) return;
 
-            const name = document.getElementById('reqEmployeeName').value;
             const reqType = document.getElementById('reqType').value;
             const reqDate = document.getElementById('reqDate').value;
             const reason = document.getElementById('reqReason').value.trim();
 
-            if (!name || !reqDate || !reason) return showMessage("กรุณากรอกข้อมูลให้ครบถ้วน!", true);
+            if (!reqDate || !reason) return showMessage("กรุณากรอกวันที่และเหตุผลให้ครบถ้วน", true);
 
             const btn = document.getElementById('btn-submit-req');
-            btn.disabled = true; btn.innerHTML = "กำลังส่ง...";
+            btn.disabled = true; 
+            btn.innerHTML = "กำลังส่ง...";
 
             try {
                 await addDoc(collection(db, getPath('requests')), {
-                    name, type: reqType, date: reqDate, reason,
-                    status: 'รออนุมัติ', timestamp: serverTimestamp(), userId: currentUser.uid
+                    name: loggedInEmp.name, 
+                    type: reqType, 
+                    date: reqDate, 
+                    reason: reason,
+                    status: 'รออนุมัติ', 
+                    timestamp: serverTimestamp(), 
+                    userId: currentUser.uid
                 });
                 showMessage(`ส่งคำร้องสำเร็จ!`);
-                
-                // เคลียร์ฟอร์ม
                 document.getElementById('reqDate').value = '';
                 document.getElementById('reqReason').value = '';
                 
-                // กำหนดชื่อในหน้าประวัติให้เป็นคนที่เพิ่งส่ง แล้วสลับไปหน้าประวัติให้ดูทันที
-                document.getElementById('historyEmployeeName').value = name;
                 switchTab('history-tab');
+                switchHistorySubTab('hist-req');
             } catch (error) {
                 showMessage("ส่งคำร้องล้มเหลว", true);
             } finally {
-                btn.disabled = false; btn.innerHTML = "ส่งคำร้อง";
+                btn.disabled = false; 
+                btn.innerHTML = "ส่งคำร้อง";
             }
         };
     </script>
