@@ -159,13 +159,23 @@
         // ฟังก์ชันตั้งค่า Firebase
         async function initFirebase() {
             try {
+                let firebaseConfig;
                 // ตรวจสอบว่ามี config ไหม
-                if (typeof __firebase_config === 'undefined') {
-                    document.getElementById('loadingStatus').innerHTML = '<span class="text-red-500">ข้อผิดพลาด: ไม่พบการตั้งค่าฐานข้อมูล</span>';
-                    return;
+                if (typeof __firebase_config !== 'undefined') {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                } else {
+                    // ใช้ Config ที่ผู้ใช้ระบุสำหรับการนำไปใช้งานภายนอก
+                    firebaseConfig = {
+                        apiKey: "AIzaSyBHuZGyY1F3v4rCrhrpt9YB90C0Ahh-stE",
+                        authDomain: "my-company-time-tracking.firebaseapp.com",
+                        projectId: "my-company-time-tracking",
+                        storageBucket: "my-company-time-tracking.firebasestorage.app",
+                        messagingSenderId: "758524847747",
+                        appId: "1:758524847747:web:2e5a49e4064334f1265db6",
+                        measurementId: "G-50SYJKTRT1"
+                    };
                 }
 
-                const firebaseConfig = JSON.parse(__firebase_config);
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
