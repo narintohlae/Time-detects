@@ -14,6 +14,8 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -21,6 +23,24 @@
     <!-- Message Box -->
     <div id="message-box" class="hidden fixed top-4 right-4 left-4 md:left-auto bg-white shadow-xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300">
         <p id="message-text" class="text-gray-800 font-medium"></p>
+    </div>
+
+    <!-- Conflict Warning Modal -->
+    <div id="conflict-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-8 w-full max-w-sm modal-enter text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-rose-100 mb-6">
+                <svg class="h-8 w-8 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">ไม่สามารถเลือกวันนี้ได้</h3>
+            <p id="conflict-msg" class="text-gray-600 mb-8 leading-relaxed">
+                เนื่องจากในวันที่ <span id="conflict-date" class="font-bold text-gray-800"></span> มีพนักงานท่านอื่นที่ได้รับอนุมัติให้หยุด/ลาแล้ว กรุณาเลือกวันอื่น
+            </p>
+            <button onclick="closeConflictModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 rounded-xl transition active:scale-95">
+                ตกลง, ฉันเข้าใจแล้ว
+            </button>
+        </div>
     </div>
 
     <!-- 1. หน้า Login -->
@@ -38,7 +58,6 @@
         <div class="space-y-6">
             <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center">
                 <label class="block text-blue-800 text-sm font-bold mb-3">กรอกรหัสประจำตัว (PIN 4 หลัก)</label>
-                <!-- ช่องกรอก PIN เมื่อครบ 4 ตัวจะทำการ Login อัตโนมัติ -->
                 <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="****" class="shadow-sm border border-gray-200 rounded-xl w-full py-4 px-4 text-center text-3xl tracking-[0.8em] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" oninput="checkAutoSubmit()">
             </div>
             <button onclick="login()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 active:scale-95">
@@ -93,25 +112,39 @@
 
             <!-- Tab 2: แจ้งลา/สลับวันหยุด -->
             <div id="request-tab" class="hidden fade-in">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative">
+                    <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-start">
+                        <svg class="w-5 h-5 mr-2 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>ระบบจะตรวจสอบวันหยุดที่ซ้ำซ้อนอัตโนมัติ หากมีพนักงานท่านอื่นหยุดในวันดังกล่าวแล้ว จะไม่สามารถส่งคำร้องได้</p>
+                    </div>
+
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">ประเภทคำร้อง</label>
-                        <select id="reqType" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <select id="reqType" onchange="toggleSwapDate()" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
                             <option value="ลากิจ">ลากิจ</option>
                             <option value="ลาป่วย">ลาป่วย</option>
                             <option value="ลาพักร้อน">ลาพักร้อน</option>
                             <option value="สลับวันหยุด">สลับวันหยุด</option>
                         </select>
                     </div>
+
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">วันที่ต้องการ (เริ่มต้น)</label>
+                        <label id="reqDateLabel" class="block text-gray-700 text-sm font-bold mb-2">วันที่ต้องการหยุด (วันที่ลา)</label>
                         <input type="date" id="reqDate" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
+
+                    <!-- ฟิลด์สำหรับสลับวันหยุด (ซ่อนเป็นค่าเริ่มต้น) -->
+                    <div id="swapDateField" class="mb-4 hidden fade-in bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <label class="block text-blue-800 text-sm font-bold mb-2">วันที่จะมาทำงานแทน (วันชดเชย)</label>
+                        <input type="date" id="reqSwapDate" class="shadow-sm border border-blue-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <p class="text-xs text-blue-600 mt-2 font-medium">กรุณาระบุวันที่คุณจะมาทำงานชดเชยวันที่คุณขอหยุดไป</p>
+                    </div>
+
                     <div class="mb-6">
                         <label class="block text-gray-700 text-sm font-bold mb-2">เหตุผล / รายละเอียด</label>
-                        <textarea id="reqReason" rows="3" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุเหตุผลที่ขอลา..."></textarea>
+                        <textarea id="reqReason" rows="3" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุเหตุผลที่ขอลา หรือรายละเอียดการสลับวันหยุด..."></textarea>
                     </div>
-                    <button onclick="submitRequest()" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 active:scale-95">
+                    <button onclick="submitRequest()" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 active:scale-95 flex justify-center items-center">
                         ส่งคำร้อง
                     </button>
                 </div>
@@ -181,7 +214,7 @@
             const box = document.getElementById('message-box');
             const text = document.getElementById('message-text');
             text.textContent = msg;
-            box.className = `fixed top-4 right-4 left-4 md:left-auto shadow-2xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300 ${isError ? 'bg-red-50 border-red-500 text-red-700' : 'bg-emerald-50 border-emerald-500 text-emerald-800'}`;
+            box.className = `fixed top-4 right-4 left-4 md:left-auto shadow-2xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300 ${isError ? 'bg-rose-50 border-rose-500 text-rose-800' : 'bg-emerald-50 border-emerald-500 text-emerald-800'}`;
             box.classList.remove('hidden');
             setTimeout(() => { box.classList.add('hidden'); }, 3000);
         };
@@ -195,6 +228,13 @@
             document.getElementById(`btn-${tabId}`).classList.add('active');
             
             if(tabId === 'history-tab') renderMyHistory();
+            
+            // Set min date for request to today
+            if(tabId === 'request-tab') {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('reqDate').setAttribute('min', today);
+                document.getElementById('reqSwapDate').setAttribute('min', today);
+            }
         };
 
         window.switchHistorySubTab = function(tabId) {
@@ -207,12 +247,37 @@
             document.getElementById(`btn-${tabId}`).className = "flex-1 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-blue-600 transition";
         };
 
+        window.toggleSwapDate = function() {
+            const reqType = document.getElementById('reqType').value;
+            const swapDateField = document.getElementById('swapDateField');
+            const reqDateLabel = document.getElementById('reqDateLabel');
+
+            if (reqType === 'สลับวันหยุด') {
+                swapDateField.classList.remove('hidden');
+                reqDateLabel.textContent = "วันที่ต้องการขอหยุด (วันที่อยากหยุด)";
+            } else {
+                swapDateField.classList.add('hidden');
+                reqDateLabel.textContent = "วันที่ต้องการหยุด (วันที่ลา)";
+                document.getElementById('reqSwapDate').value = ''; // เคลียร์ค่า
+            }
+        };
+
+        window.closeConflictModal = function() {
+            document.getElementById('conflict-modal').classList.add('hidden');
+        };
+
         const formatDate = (timestamp, includeTime = false) => {
             if (!timestamp) return 'กำลังบันทึก...';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
             let opts = { day: '2-digit', month: 'short', year: '2-digit' };
             if(includeTime) opts = { ...opts, hour: '2-digit', minute: '2-digit' };
             return date.toLocaleString('th-TH', opts);
+        };
+
+        const formatDisplayDate = (dateString) => {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
         };
 
         // Auth Init
@@ -225,7 +290,7 @@
                 }
             } catch (error) {
                 document.getElementById('auth-status').textContent = "❌ เชื่อมต่อระบบล้มเหลว";
-                document.getElementById('auth-status').classList.add("text-red-500");
+                document.getElementById('auth-status').classList.add("text-rose-500");
             }
         }
 
@@ -246,8 +311,6 @@
             // โหลดรายชื่อพนักงาน
             onSnapshot(collection(db, getPath('employees')), (snapshot) => {
                 employeesData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                
-                // เช็คว่ามีข้อมูลล็อกอินค้างไว้ในเครื่องหรือไม่ (Auto Login)
                 checkAutoLogin();
             }, console.error);
 
@@ -269,23 +332,19 @@
         // --- Login & Auto Login Logic ---
         function checkAutoLogin() {
             if (loggedInEmp) return; 
-
             const savedPin = localStorage.getItem('myCompanyEmpPin');
-
             if (savedPin) {
                 const emp = employeesData.find(e => (e.pin || '1234') === savedPin);
                 if (emp) {
-                    processLoginSuccess(emp, false); // ล็อกอินอัตโนมัติ
+                    processLoginSuccess(emp, false);
                 } else {
                     localStorage.removeItem('myCompanyEmpPin');
                 }
             }
         }
 
-        // ฟังก์ชันเมื่อมีการพิมพ์รหัส PIN
         window.checkAutoSubmit = function() {
             const pin = document.getElementById('login-pin').value;
-            // ถ้ารหัสครบ 4 หลัก ให้ Login ทันที ไม่ต้องรอให้ผู้ใช้กดปุ่ม
             if(pin.length === 4) {
                 setTimeout(login, 100); 
             }
@@ -293,14 +352,11 @@
 
         window.login = function() {
             const pin = document.getElementById('login-pin').value;
-            
             if(!pin || pin.length < 4) return showMessage("กรุณากรอกรหัส PIN ให้ครบ 4 หลัก", true);
 
-            // ค้นหาพนักงานจาก PIN เพียงอย่างเดียว
             const emp = employeesData.find(e => (e.pin || '1234') === pin);
             
             if (emp) {
-                // บันทึก PIN ลงในเครื่องเพื่อจำเข้าสู่ระบบ
                 localStorage.setItem('myCompanyEmpPin', emp.pin || '1234');
                 processLoginSuccess(emp, true);
             } else {
@@ -312,22 +368,16 @@
         function processLoginSuccess(emp, showMsg = true) {
             loggedInEmp = emp;
             document.getElementById('user-display-name').textContent = loggedInEmp.name;
-            
-            // สลับหน้า
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('main-view').classList.remove('hidden');
-            
             switchTab('time-tab');
             document.getElementById('login-pin').value = '';
-            
             if(showMsg) showMessage(`ยินดีต้อนรับคุณ ${loggedInEmp.name}`);
         }
 
         window.confirmLogout = function() {
             if(confirm("คุณต้องการเปลี่ยนบัญชีผู้ใช้ใช่หรือไม่? (จะต้องกรอกรหัส PIN ใหม่)")) {
-                // ล้างข้อมูลที่จำไว้ในเครื่อง
                 localStorage.removeItem('myCompanyEmpPin');
-                
                 loggedInEmp = null;
                 document.getElementById('main-view').classList.add('hidden');
                 document.getElementById('login-view').classList.remove('hidden');
@@ -374,6 +424,13 @@
                     if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-100 text-emerald-700 border-emerald-200';
                     if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-100 text-rose-700 border-rose-200';
 
+                    let dateDisplay = `<span class="font-bold text-gray-500">วันที่ขอหยุด:</span> <span class="font-medium">${formatDisplayDate(req.date)}</span>`;
+                    
+                    // ถ้าเป็นการสลับวันหยุด ให้แสดงวันที่มาทำแทนด้วย
+                    if (req.type === 'สลับวันหยุด' && req.swapDate) {
+                        dateDisplay += `<br><span class="font-bold text-blue-500">วันที่มาทำแทน:</span> <span class="font-medium text-blue-700">${formatDisplayDate(req.swapDate)}</span>`;
+                    }
+
                     return `
                     <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
                         <div class="flex justify-between items-start mb-3">
@@ -385,8 +442,8 @@
                                 ${req.status}
                             </span>
                         </div>
-                        <div class="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                            <span class="font-bold text-gray-500">วันที่ขอ:</span> <span class="font-medium">${req.date}</span> <br>
+                        <div class="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100 leading-relaxed">
+                            ${dateDisplay} <br>
                             <span class="font-bold text-gray-500">เหตุผล:</span> <span class="font-medium">${req.reason}</span>
                         </div>
                     </div>
@@ -429,27 +486,61 @@
 
             const reqType = document.getElementById('reqType').value;
             const reqDate = document.getElementById('reqDate').value;
-            const reason = document.getElementById('reqReason').value.trim();
+            const reqReason = document.getElementById('reqReason').value.trim();
+            const reqSwapDate = document.getElementById('reqSwapDate').value;
 
-            if (!reqDate || !reason) return showMessage("กรุณากรอกวันที่และเหตุผลให้ครบถ้วน", true);
+            if (!reqDate || !reqReason) return showMessage("กรุณากรอกวันที่และเหตุผลให้ครบถ้วน", true);
+            if (reqType === 'สลับวันหยุด' && !reqSwapDate) return showMessage("กรุณาระบุ 'วันที่จะมาทำงานแทน'", true);
+            if (reqType === 'สลับวันหยุด' && reqDate === reqSwapDate) return showMessage("วันที่ขอหยุดกับวันที่มาทำงานแทน ต้องไม่ใช่วันเดียวกัน", true);
+
+            // --- CONFLICT CHECK LOGIC ---
+            // หาว่ามีใครได้รับอนุมัติให้หยุดในวันที่เราจะขอหยุด หรือวันที่เราจะมาทำแทน หรือไม่
+            // วันที่เช็ค 1: reqDate (วันที่เราจะขอหยุด) - ต้องไม่มีคนหยุด
+            // วันที่เช็ค 2: reqSwapDate (วันที่จะมาทำแทน) - อันนี้คนอื่นหยุดได้ ไม่เป็นไร เพราะเราจะมาเสียบแทนให้ 
+            // ดังนั้นเราจะเช็คแค่ reqDate เท่านั้นว่ามีคนชิงหยุดไปก่อนแล้วหรือยัง
+            
+            const conflictingRequest = allRequests.find(req => 
+                req.date === reqDate && 
+                req.status === 'อนุมัติแล้ว' && 
+                req.name !== loggedInEmp.name &&
+                (req.type === 'ลากิจ' || req.type === 'ลาป่วย' || req.type === 'ลาพักร้อน' || req.type === 'สลับวันหยุด')
+            );
+
+            if (conflictingRequest) {
+                document.getElementById('conflict-date').textContent = formatDisplayDate(reqDate);
+                document.getElementById('conflict-modal').classList.remove('hidden');
+                return;
+            }
+            // -----------------------------
 
             const btn = document.getElementById('btn-submit-req');
+            const originalText = btn.innerHTML;
             btn.disabled = true; 
-            btn.innerHTML = "กำลังส่ง...";
+            btn.innerHTML = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>`;
+
+            // เตรียมข้อมูลที่จะส่ง (ถ้าไม่ใช่สลับวันหยุด จะไม่ส่ง reqSwapDate ไป)
+            const requestData = {
+                name: loggedInEmp.name, 
+                type: reqType, 
+                date: reqDate, 
+                reason: reqReason,
+                status: 'รออนุมัติ', 
+                timestamp: serverTimestamp(), 
+                userId: currentUser.uid
+            };
+
+            if (reqType === 'สลับวันหยุด') {
+                requestData.swapDate = reqSwapDate; // เพิ่มวันที่มาทำแทนเข้าไปด้วย
+            }
 
             try {
-                await addDoc(collection(db, getPath('requests')), {
-                    name: loggedInEmp.name, 
-                    type: reqType, 
-                    date: reqDate, 
-                    reason: reason,
-                    status: 'รออนุมัติ', 
-                    timestamp: serverTimestamp(), 
-                    userId: currentUser.uid
-                });
+                await addDoc(collection(db, getPath('requests')), requestData);
                 showMessage(`ส่งคำร้องสำเร็จ!`);
+                
+                // เคลียร์ฟอร์ม
                 document.getElementById('reqDate').value = '';
                 document.getElementById('reqReason').value = '';
+                document.getElementById('reqSwapDate').value = '';
                 
                 switchTab('history-tab');
                 switchHistorySubTab('hist-req');
@@ -457,7 +548,7 @@
                 showMessage("ส่งคำร้องล้มเหลว", true);
             } finally {
                 btn.disabled = false; 
-                btn.innerHTML = "ส่งคำร้อง";
+                btn.innerHTML = originalText;
             }
         };
     </script>
