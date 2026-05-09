@@ -399,8 +399,12 @@
             if (myTodayRecords.length === 0) {
                 panel.className = "mb-6 p-4 rounded-2xl text-center border border-gray-200 bg-gray-50 shadow-inner transition-all duration-300";
                 panel.innerHTML = `<p class="text-gray-600 font-bold text-lg">⚪️ วันนี้ยังไม่ได้ลงเวลา</p><p class="text-gray-500 text-sm mt-1">อย่าลืมกดเข้างานนะครับ/ค่ะ</p>`;
-                btnIn.classList.remove('opacity-50');
-                btnOut.classList.add('opacity-50');
+                
+                // เปิดปุ่มเข้างาน, ล็อกปุ่มออกงาน
+                btnIn.disabled = false;
+                btnIn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnOut.disabled = true;
+                btnOut.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 const latest = myTodayRecords[0];
                 const timeObj = latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp);
@@ -409,13 +413,21 @@
                 if (latest.type === 'เข้างาน') {
                     panel.className = "mb-6 p-4 rounded-2xl text-center border border-emerald-200 bg-emerald-50 shadow-sm transition-all duration-300";
                     panel.innerHTML = `<p class="text-emerald-700 font-bold text-lg">🟢 วันนี้เข้างานแล้ว</p><p class="text-emerald-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr} น.</p>`;
-                    btnIn.classList.add('opacity-50');
-                    btnOut.classList.remove('opacity-50');
+                    
+                    // ล็อกปุ่มเข้างาน, เปิดปุ่มออกงาน
+                    btnIn.disabled = true;
+                    btnIn.classList.add('opacity-50', 'cursor-not-allowed');
+                    btnOut.disabled = false;
+                    btnOut.classList.remove('opacity-50', 'cursor-not-allowed');
                 } else if (latest.type === 'ออกงาน') {
                     panel.className = "mb-6 p-4 rounded-2xl text-center border border-rose-200 bg-rose-50 shadow-sm transition-all duration-300";
                     panel.innerHTML = `<p class="text-rose-700 font-bold text-lg">🔴 วันนี้ออกงานแล้ว</p><p class="text-rose-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr} น.</p>`;
-                    btnIn.classList.remove('opacity-50');
-                    btnOut.classList.remove('opacity-50');
+                    
+                    // ป้องกันการกดออกงานซ้ำ (หากจะมาเข้ากะใหม่ อนุญาตให้กดเข้างานได้)
+                    btnIn.disabled = false;
+                    btnIn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnOut.disabled = true;
+                    btnOut.classList.add('opacity-50', 'cursor-not-allowed');
                 }
             }
         };
@@ -494,6 +506,24 @@
 
         window.recordTime = async function(type) {
             if (!isReady || !loggedInEmp) return showMessage("ไม่พบข้อมูลผู้ใช้งาน", true);
+
+            // Double check ด่านที่ 2: ป้องกันการกดผิดแบบชัวร์ๆ
+            const todayStr = new Date().toLocaleDateString('th-TH');
+            const myTodayRecords = allTimeRecords.filter(r => {
+                if (r.name !== loggedInEmp.name || !r.timestamp) return false;
+                const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+                return recDate.toLocaleDateString('th-TH') === todayStr;
+            });
+
+            if (type === 'ออกงาน') {
+                if (myTodayRecords.length === 0 || myTodayRecords[0].type !== 'เข้างาน') {
+                    return showMessage("❌ คุณยังไม่ได้กด 'เข้างาน' ของรอบนี้ครับ", true);
+                }
+            } else if (type === 'เข้างาน') {
+                if (myTodayRecords.length > 0 && myTodayRecords[0].type === 'เข้างาน') {
+                    return showMessage("❌ คุณกด 'เข้างาน' ไปแล้ว กรุณากดออกงานก่อนครับ", true);
+                }
+            }
 
             const btnId = type === 'เข้างาน' ? 'btn-in' : 'btn-out';
             const btn = document.getElementById(btnId);
