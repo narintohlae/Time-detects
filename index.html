@@ -21,7 +21,7 @@
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <!-- Message Box -->
-    <div id="message-box" class="hidden fixed top-4 right-4 left-4 md:left-auto bg-white shadow-2xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300">
+    <div id="message-box" class="hidden fixed top-4 right-4 left-4 md:left-auto bg-white shadow-xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300">
         <p id="message-text" class="text-gray-800 font-medium"></p>
     </div>
 
@@ -36,7 +36,7 @@
             <h3 class="text-xl font-bold text-gray-900 mb-2">วันหยุดชนกัน!</h3>
             <p id="conflict-msg" class="text-gray-600 mb-8 leading-relaxed">
                 ในวันที่ <span id="conflict-date" class="font-bold text-gray-800"></span> <br>
-                มีเพื่อนพนักงานส่งคำร้องจองวันหยุดไปแล้ว<br>
+                มีเพื่อนพนักงานส่งคำร้องจองวันหยุดไปแล้ว (สถานะ: <span id="conflict-status" class="text-rose-600 font-semibold"></span>)<br>
                 กรุณาเลือกวันอื่นครับ
             </p>
             <button onclick="closeConflictModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 rounded-xl transition active:scale-95">
@@ -45,35 +45,26 @@
         </div>
     </div>
 
-    <!-- 1. หน้า Login (เข้าครั้งแรกครั้งเดียว) -->
+    <!-- 1. หน้า Login -->
     <div id="login-view" class="bg-white p-6 md:p-8 rounded-3xl shadow-lg w-full max-w-sm fade-in">
         <div class="text-center mb-8">
             <div class="inline-block bg-blue-100 p-4 rounded-full mb-4">
                 <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-gray-800 mb-1">ยืนยันตัวตน</h1>
-            <p class="text-sm text-gray-500">กรุณายืนยันตัวตนในครั้งแรกที่เข้าใช้งาน</p>
-            <p id="auth-status" class="text-xs text-gray-400 mt-2">กำลังตรวจสอบระบบ...</p>
+            <h1 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบ</h1>
+            <p id="auth-status" class="text-sm text-gray-500 mt-2">กำลังตรวจสอบข้อมูล...</p>
         </div>
 
-        <div class="space-y-5">
-            <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2 text-left">1. เลือกชื่อของคุณ</label>
-                <select id="login-name" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-lg appearance-none bg-gray-50">
-                    <option value="">-- กำลังโหลดรายชื่อ... --</option>
-                </select>
+        <div class="space-y-6">
+            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center">
+                <label class="block text-blue-800 text-sm font-bold mb-3">กรอกรหัสประจำตัว (PIN 4 หลัก)</label>
+                <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="****" class="shadow-sm border border-gray-200 rounded-xl w-full py-4 px-4 text-center text-3xl tracking-[0.8em] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" oninput="checkAutoSubmit()">
             </div>
-            <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2 text-left">2. รหัส PIN 4 หลัก</label>
-                <!-- ใช้ inputmode="numeric" เพื่อเรียกคีย์บอร์ดตัวเลขขึ้นมาบนมือถือ -->
-                <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="****" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-center text-2xl tracking-[0.5em] bg-white" oninput="checkAutoSubmit()">
-            </div>
-            <button onclick="login()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 active:scale-95 mt-4">
+            <button onclick="login()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 active:scale-95">
                 เข้าสู่ระบบ
             </button>
-            <p class="text-xs text-blue-600 mt-4 text-center leading-relaxed">💡 ระบบจะจดจำคุณไว้ในอุปกรณ์นี้<br>ครั้งต่อไปไม่ต้องใส่ PIN อีก</p>
         </div>
     </div>
 
@@ -86,9 +77,9 @@
                 <p class="text-blue-100 text-sm mb-0.5">สวัสดี,</p>
                 <h2 id="user-display-name" class="text-xl font-bold">ชื่อพนักงาน</h2>
             </div>
-            <button onclick="confirmLogout()" class="bg-blue-700 hover:bg-blue-800 p-2.5 rounded-xl text-xs font-medium transition flex items-center shadow-sm">
+            <button onclick="confirmLogout()" class="bg-blue-700 hover:bg-blue-800 p-2 rounded-xl text-sm font-medium transition flex items-center">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                ออกจากระบบ
+                เปลี่ยนผู้ใช้
             </button>
         </div>
         
@@ -103,37 +94,31 @@
             
             <!-- Tab 1: ลงเวลา -->
             <div id="time-tab" class="block h-full flex flex-col pb-6 fade-in">
-                <div class="text-center mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-2">
+                <div class="text-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-2">
                     <p class="text-gray-500 mb-1 font-medium">เวลาปัจจุบัน</p>
                     <h1 id="live-clock" class="text-5xl font-bold text-gray-800 tracking-wider">00:00</h1>
                     <p id="live-date" class="text-blue-600 mt-2 text-sm font-medium"></p>
                 </div>
-
-                <!-- แผงสถานะประจำวัน (Today's Status) -->
-                <div id="today-status-panel" class="mb-6 p-4 rounded-2xl text-center border border-gray-200 bg-gray-50 shadow-inner transition-all duration-300">
-                    <p class="text-gray-500 text-sm">กำลังตรวจสอบสถานะ...</p>
-                </div>
                 
                 <div class="flex flex-col space-y-4 mt-auto">
-                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-emerald-500/30 transition duration-300 text-2xl tracking-wide flex items-center justify-center active:scale-95">
-                        <svg class="w-7 h-7 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    <!-- ปุ่มเข้างาน/ออกงาน จะสลับกันแสดงผลโดยอิงจากสถานะล่าสุด -->
+                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-6 rounded-2xl shadow-lg shadow-emerald-500/30 transition duration-300 text-3xl tracking-wide flex items-center justify-center active:scale-95">
+                        <svg class="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                         เข้างาน
                     </button>
-                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-rose-500/30 transition duration-300 text-2xl tracking-wide flex items-center justify-center active:scale-95 opacity-50">
-                        <svg class="w-7 h-7 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    
+                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="hidden w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-6 rounded-2xl shadow-lg shadow-rose-500/30 transition duration-300 text-3xl tracking-wide flex items-center justify-center active:scale-95">
+                        <svg class="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                         ออกงาน
                     </button>
+                    
+                    <p id="status-text" class="text-center text-sm font-medium text-gray-500 mt-4"></p>
                 </div>
             </div>
 
             <!-- Tab 2: แจ้งลา/สลับวันหยุด -->
             <div id="request-tab" class="hidden fade-in">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative">
-                    <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-start">
-                        <svg class="w-5 h-5 mr-2 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <p>ระบบจะตรวจสอบวันหยุดที่ซ้ำซ้อนอัตโนมัติ หากมีพนักงานท่านอื่นจองวันดังกล่าวไปแล้ว จะไม่สามารถส่งคำร้องได้</p>
-                    </div>
-
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">ประเภทคำร้อง</label>
                         <select id="reqType" onchange="toggleSwapDate()" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
@@ -146,10 +131,9 @@
 
                     <div class="mb-4">
                         <label id="reqDateLabel" class="block text-gray-700 text-sm font-bold mb-2">วันที่ต้องการหยุด (วันที่ลา)</label>
-                        <input type="date" id="reqDate" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="date" id="reqDate" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
 
-                    <!-- ฟิลด์สำหรับสลับวันหยุด (ซ่อนเป็นค่าเริ่มต้น) -->
                     <div id="swapDateField" class="mb-4 hidden fade-in bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <label class="block text-blue-800 text-sm font-bold mb-2">วันที่จะมาทำงานแทน (วันชดเชย)</label>
                         <input type="date" id="reqSwapDate" class="shadow-sm border border-blue-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
@@ -211,11 +195,10 @@
         let currentUser = null;
         let isReady = false;
         
+        let employeesData = [];
         let allRequests = []; 
         let allTimeRecords = [];
-        let employeesDataGlobal = [];
         
-        // ตัวแปรเก็บข้อมูลพนักงานที่กำลังใช้งานอยู่
         let loggedInEmp = null; 
 
         // Live Clock
@@ -245,9 +228,16 @@
             if(tabId === 'history-tab') renderMyHistory();
             
             if(tabId === 'request-tab') {
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('reqDate').setAttribute('min', today);
-                document.getElementById('reqSwapDate').setAttribute('min', today);
+                // เซ็ตค่า Default วันลาให้เป็น "วันพรุ่งนี้" (ลดขั้นตอนพนักงาน)
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tmrStr = tomorrow.toISOString().split('T')[0];
+                
+                const reqDateInput = document.getElementById('reqDate');
+                if(!reqDateInput.value) reqDateInput.value = tmrStr; 
+                
+                reqDateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
+                document.getElementById('reqSwapDate').setAttribute('min', new Date().toISOString().split('T')[0]);
             }
         };
 
@@ -256,7 +246,6 @@
             document.getElementById('hist-req').classList.add('hidden');
             document.getElementById('btn-hist-time').className = "flex-1 py-1.5 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition";
             document.getElementById('btn-hist-req').className = "flex-1 py-1.5 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition";
-            
             document.getElementById(tabId).classList.remove('hidden');
             document.getElementById(`btn-${tabId}`).className = "flex-1 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-blue-600 transition";
         };
@@ -320,18 +309,9 @@
 
         function loadAllData() {
             if (!currentUser) return;
-
+            
             onSnapshot(collection(db, getPath('employees')), (snapshot) => {
-                employeesDataGlobal = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                employeesDataGlobal.sort((a, b) => a.name.localeCompare(b.name, 'th'));
-                
-                const select = document.getElementById('login-name');
-                const currentVal = select.value;
-                select.innerHTML = employeesDataGlobal.length > 0 
-                    ? `<option value="">-- กรุณาเลือกชื่อของคุณ --</option>` + employeesDataGlobal.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('')
-                    : `<option value="">-- ไม่มีรายชื่อในระบบ --</option>`;
-                if(currentVal) select.value = currentVal;
-
+                employeesData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 checkAutoLogin();
             }, console.error);
 
@@ -341,7 +321,7 @@
                 
                 if(loggedInEmp) {
                     renderMyHistory(); 
-                    updateTodayStatus(); 
+                    updateSmartButtons(); // อัปเดตปุ่มฉลาดเมื่อข้อมูลใหม่เข้ามา
                 }
             }, console.error);
 
@@ -352,23 +332,15 @@
             }, console.error);
         }
 
-        // --- ระบบ Login (ด้วย PIN) และจดจำอุปกรณ์ ---
         function checkAutoLogin() {
-            if (loggedInEmp) return; // ถ้า Login แล้ว ไม่ต้องเช็คซ้ำ
-
-            // ดึงชื่อและ PIN จาก LocalStorage
-            const savedName = localStorage.getItem('myCompanyEmpNameSimple');
-            const savedPin = localStorage.getItem('myCompanyEmpPinSimple');
-
-            if (savedName && savedPin) {
-                // ตรวจสอบกับฐานข้อมูลว่าชื่อและ PIN ยังถูกต้องหรือไม่ (เผื่อผู้จัดการเปลี่ยน PIN)
-                const emp = employeesDataGlobal.find(e => e.name === savedName && (e.pin || '1234') === savedPin);
+            if (loggedInEmp) return; 
+            const savedPin = localStorage.getItem('myCompanyEmpPin');
+            if (savedPin) {
+                const emp = employeesData.find(e => (e.pin || '1234') === savedPin);
                 if (emp) {
                     processLoginSuccess(emp, false);
                 } else {
-                    // ถ้าพนักงานถูกลบ หรือถูกเปลี่ยน PIN จะหลุดจากการล็อคอินอัตโนมัติ
-                    localStorage.removeItem('myCompanyEmpNameSimple');
-                    localStorage.removeItem('myCompanyEmpPinSimple');
+                    localStorage.removeItem('myCompanyEmpPin');
                 }
             }
         }
@@ -381,22 +353,16 @@
         }
 
         window.login = function() {
-            const inputName = document.getElementById('login-name').value.trim();
-            const inputPin = document.getElementById('login-pin').value.trim();
+            const pin = document.getElementById('login-pin').value;
+            if(!pin || pin.length < 4) return showMessage("กรุณากรอกรหัส PIN ให้ครบ 4 หลัก", true);
 
-            if(!inputName) return showMessage("กรุณาเลือกชื่อของคุณก่อน", true);
-            if(!inputPin || inputPin.length < 4) return showMessage("กรุณากรอกรหัส PIN ให้ครบ 4 หลัก", true);
-
-            // ตรวจสอบชื่อและ PIN
-            const emp = employeesDataGlobal.find(e => e.name === inputName && (e.pin || '1234') === inputPin);
-
+            const emp = employeesData.find(e => (e.pin || '1234') === pin);
+            
             if (emp) {
-                // บันทึกชื่อและ PIN ลงเครื่อง (เพื่อจดจำการเข้าระบบครั้งต่อไป)
-                localStorage.setItem('myCompanyEmpNameSimple', emp.name);
-                localStorage.setItem('myCompanyEmpPinSimple', emp.pin || '1234');
+                localStorage.setItem('myCompanyEmpPin', emp.pin || '1234');
                 processLoginSuccess(emp, true);
             } else {
-                showMessage("รหัส PIN ไม่ถูกต้อง!", true);
+                showMessage("รหัส PIN ไม่ถูกต้อง หรือไม่มีในระบบ", true);
                 document.getElementById('login-pin').value = '';
             }
         };
@@ -404,40 +370,35 @@
         function processLoginSuccess(emp, showMsg = true) {
             loggedInEmp = emp;
             document.getElementById('user-display-name').textContent = loggedInEmp.name;
-            
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('main-view').classList.remove('hidden');
-            
             switchTab('time-tab');
-            updateTodayStatus();
-            
+            updateSmartButtons(); // อัปเดตปุ่มให้ฉลาด
+            document.getElementById('login-pin').value = '';
             if(showMsg) showMessage(`ยินดีต้อนรับคุณ ${loggedInEmp.name}`);
         }
 
         window.confirmLogout = function() {
-            if(confirm("คุณต้องการออกจากระบบใช่หรือไม่? (จะต้องกรอกรหัส PIN ใหม่ในครั้งต่อไป)")) {
-                // ล้างชื่อที่จำไว้
-                localStorage.removeItem('myCompanyEmpNameSimple');
-                localStorage.removeItem('myCompanyEmpPinSimple');
+            if(confirm("คุณต้องการเปลี่ยนบัญชีผู้ใช้ใช่หรือไม่? (จะต้องกรอกรหัส PIN ใหม่)")) {
+                localStorage.removeItem('myCompanyEmpPin');
                 loggedInEmp = null;
-                
                 document.getElementById('main-view').classList.add('hidden');
                 document.getElementById('login-view').classList.remove('hidden');
-                document.getElementById('login-name').value = '';
-                document.getElementById('login-pin').value = '';
+                document.getElementById('login-pin').focus();
             }
         };
 
-        // --- อัปเดตแผงสถานะประจำวัน ---
-        window.updateTodayStatus = function() {
+        // --- NEW: ปุ่มลงเวลาอัจฉริยะ (Smart Buttons) ---
+        window.updateSmartButtons = function() {
             if (!loggedInEmp) return;
 
-            const panel = document.getElementById('today-status-panel');
             const btnIn = document.getElementById('btn-in');
             const btnOut = document.getElementById('btn-out');
+            const statusText = document.getElementById('status-text');
             
             const todayStr = new Date().toLocaleDateString('th-TH');
 
+            // หาประวัติล่าสุดเฉพาะของวันนี้ และของตัวเอง
             const myTodayRecords = allTimeRecords.filter(r => {
                 if (r.name !== loggedInEmp.name || !r.timestamp) return false;
                 const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
@@ -445,28 +406,28 @@
             });
 
             if (myTodayRecords.length === 0) {
-                panel.className = "mb-6 p-4 rounded-2xl text-center border border-gray-200 bg-gray-50 shadow-inner transition-all duration-300";
-                panel.innerHTML = `<p class="text-gray-600 font-bold text-lg">⚪️ วันนี้ยังไม่ได้ลงเวลา</p><p class="text-gray-500 text-sm mt-1">อย่าลืมกดเข้างานนะครับ/ค่ะ</p>`;
-                
-                btnIn.classList.remove('opacity-50');
-                btnOut.classList.add('opacity-50');
+                // ยังไม่ลงเวลา: โชว์แค่ปุ่มเข้างาน
+                btnIn.classList.remove('hidden');
+                btnOut.classList.add('hidden');
+                statusText.innerHTML = "คุณยังไม่ได้เข้างานในวันนี้";
+                statusText.className = "text-center text-sm font-medium text-gray-500 mt-4";
             } else {
                 const latest = myTodayRecords[0];
                 const timeObj = latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp);
                 const timeStr = timeObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
                 if (latest.type === 'เข้างาน') {
-                    panel.className = "mb-6 p-4 rounded-2xl text-center border border-emerald-200 bg-emerald-50 shadow-sm transition-all duration-300";
-                    panel.innerHTML = `<p class="text-emerald-700 font-bold text-lg">🟢 วันนี้เข้างานแล้ว</p><p class="text-emerald-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr} น.</p>`;
-                    
-                    btnIn.classList.add('opacity-50');
-                    btnOut.classList.remove('opacity-50');
+                    // เข้างานแล้ว: ซ่อนปุ่มเข้างาน โชว์แค่ปุ่มออกงาน
+                    btnIn.classList.add('hidden');
+                    btnOut.classList.remove('hidden');
+                    statusText.innerHTML = `🟢 เข้างานแล้วเมื่อเวลา ${timeStr} น.`;
+                    statusText.className = "text-center text-sm font-bold text-emerald-600 mt-4";
                 } else if (latest.type === 'ออกงาน') {
-                    panel.className = "mb-6 p-4 rounded-2xl text-center border border-rose-200 bg-rose-50 shadow-sm transition-all duration-300";
-                    panel.innerHTML = `<p class="text-rose-700 font-bold text-lg">🔴 วันนี้ออกงานแล้ว</p><p class="text-rose-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr} น.</p>`;
-                    
-                    btnIn.classList.remove('opacity-50');
-                    btnOut.classList.remove('opacity-50');
+                    // ออกงานแล้ว: โชว์ปุ่มเข้างาน (เผื่อกลับมาเข้า OT) แต่ออกสีดรอปๆ ไว้
+                    btnIn.classList.remove('hidden');
+                    btnOut.classList.add('hidden');
+                    statusText.innerHTML = `🔴 ออกงานแล้วเมื่อเวลา ${timeStr} น.`;
+                    statusText.className = "text-center text-sm font-bold text-rose-600 mt-4";
                 }
             }
         };
@@ -544,7 +505,6 @@
             btn.innerHTML = `<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto"></div>`;
 
             try {
-                // บันทึกเวลาด้วยชื่อที่เข้าสู่ระบบ
                 await addDoc(collection(db, getPath('time_records')), {
                     name: loggedInEmp.name, 
                     type: type, 
@@ -553,7 +513,7 @@
                 });
                 
                 showMessage(`บันทึกเวลา${type} สำเร็จ!`);
-                // หลังจากบันทึก จะไม่เด้งออก ให้พนักงานเห็นสถานะอัปเดต
+                // หลังจากบันทึก ปุ่มจะสลับตัวเองให้อัตโนมัติด้วยฟังก์ชัน updateSmartButtons
 
             } catch (error) {
                 showMessage("บันทึกข้อมูลล้มเหลว กรุณาลองใหม่", true);
@@ -575,7 +535,6 @@
             if (reqType === 'สลับวันหยุด' && !reqSwapDate) return showMessage("กรุณาระบุ 'วันที่จะมาทำงานแทน'", true);
             if (reqType === 'สลับวันหยุด' && reqDate === reqSwapDate) return showMessage("วันที่ขอหยุดกับวันที่มาทำงานแทน ต้องไม่ใช่วันเดียวกัน", true);
 
-            // --- CONFLICT CHECK LOGIC ---
             const conflictingRequest = allRequests.find(req => 
                 req.date === reqDate && 
                 req.name !== loggedInEmp.name &&
@@ -584,10 +543,10 @@
 
             if (conflictingRequest) {
                 document.getElementById('conflict-date').textContent = formatDisplayDate(reqDate);
+                document.getElementById('conflict-status').textContent = conflictingRequest.status;
                 document.getElementById('conflict-modal').classList.remove('hidden');
                 return;
             }
-            // -----------------------------
 
             const btn = document.getElementById('btn-submit-req');
             const originalText = btn.innerHTML;
