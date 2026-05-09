@@ -33,12 +33,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">วันหยุดชนกัน!</h3>
-            <p id="conflict-msg" class="text-gray-600 mb-8 leading-relaxed">
-                ในวันที่ <span id="conflict-date" class="font-bold text-gray-800"></span> <br>
-                มีเพื่อนพนักงานส่งคำร้องจองวันหยุดไปแล้ว (สถานะ: <span id="conflict-status" class="text-rose-600 font-semibold"></span>)<br>
-                กรุณาเลือกวันอื่นครับ
-            </p>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">ไม่สามารถส่งคำร้องได้</h3>
+            <p id="conflict-msg" class="text-gray-600 mb-8 leading-relaxed"></p>
             <button onclick="closeConflictModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 rounded-xl transition active:scale-95">
                 ตกลง, ฉันเข้าใจแล้ว
             </button>
@@ -49,31 +45,34 @@
     <div id="login-view" class="bg-white p-6 md:p-8 rounded-3xl shadow-lg w-full max-w-sm fade-in">
         <div class="text-center mb-8">
             <div class="inline-block bg-blue-100 p-4 rounded-full mb-4">
-                <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path>
-                </svg>
+                <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
             </div>
             <h1 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบ</h1>
             <p id="auth-status" class="text-sm text-gray-500 mt-2">กำลังตรวจสอบข้อมูล...</p>
         </div>
 
-        <div class="space-y-6">
-            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center">
-                <label class="block text-blue-800 text-sm font-bold mb-3">กรอกรหัสประจำตัว (PIN 4 หลัก)</label>
-                <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="****" class="shadow-sm border border-gray-200 rounded-xl w-full py-4 px-4 text-center text-3xl tracking-[0.8em] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" oninput="checkAutoSubmit()">
+        <div class="space-y-5" id="login-form">
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">1. เลือกชื่อของคุณ</label>
+                <select id="login-name" class="shadow-sm border border-gray-200 rounded-xl w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-lg appearance-none">
+                    <option value="">-- กำลังโหลดรายชื่อ... --</option>
+                </select>
             </div>
-            <button onclick="login()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 active:scale-95">
-                เข้าสู่ระบบ
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">2. รหัส PIN 4 หลัก</label>
+                <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="****" class="shadow-sm border border-gray-200 rounded-xl w-full py-3 px-4 text-center text-2xl tracking-[0.5em] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" oninput="if(this.value.length===4) login();">
+            </div>
+            <button onclick="login()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 mt-6 active:scale-95">
+                ยืนยันเข้าสู่ระบบ
             </button>
         </div>
     </div>
 
     <!-- 2. หน้า Dashboard (ส่วนตัว) -->
-    <!-- ปรับความสูงสำหรับมือถือ ให้เลื่อนได้สุด -->
-    <div id="main-view" class="hidden bg-white rounded-3xl shadow-lg w-full max-w-md h-[90vh] max-h-[800px] flex flex-col fade-in overflow-hidden relative border border-gray-100">
+    <div id="main-view" class="hidden bg-white rounded-3xl shadow-lg w-full max-w-md h-[750px] flex flex-col fade-in overflow-hidden relative border border-gray-100">
         
         <!-- Header -->
-        <div class="bg-blue-600 p-6 text-white rounded-t-3xl flex justify-between items-center shadow-md relative z-10 shrink-0">
+        <div class="bg-blue-600 p-6 text-white rounded-t-3xl flex justify-between items-center shadow-md relative z-10">
             <div>
                 <p class="text-blue-100 text-sm mb-0.5">สวัสดี,</p>
                 <h2 id="user-display-name" class="text-xl font-bold">ชื่อพนักงาน</h2>
@@ -85,7 +84,7 @@
         </div>
         
         <!-- Tabs -->
-        <div class="flex border-b bg-gray-50 shadow-sm relative z-10 shrink-0">
+        <div class="flex border-b bg-gray-50 shadow-sm relative z-10">
             <button onclick="switchTab('time-tab')" id="btn-time-tab" class="tab-btn active flex-1 px-2 py-3 text-center text-sm font-medium text-gray-600 focus:outline-none">ลงเวลา</button>
             <button onclick="switchTab('request-tab')" id="btn-request-tab" class="tab-btn flex-1 px-2 py-3 text-center text-sm font-medium text-gray-600 focus:outline-none">ส่งคำร้อง</button>
             <button onclick="switchTab('history-tab')" id="btn-history-tab" class="tab-btn flex-1 px-2 py-3 text-center text-sm font-medium text-gray-600 focus:outline-none">ประวัติของฉัน</button>
@@ -101,17 +100,22 @@
                     <p id="live-date" class="text-blue-600 mt-2 text-sm font-medium"></p>
                 </div>
 
-                <!-- แผงสถานะประจำวัน (Today's Status) -->
+                <!-- แผงสถานะประจำวัน -->
                 <div id="today-status-panel" class="mb-6 p-4 rounded-2xl text-center border border-gray-200 bg-gray-50 shadow-inner transition-all duration-300">
                     <p class="text-gray-500 text-sm">กำลังตรวจสอบสถานะ...</p>
                 </div>
                 
-                <div class="flex flex-col space-y-4 mt-auto">
-                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-emerald-500/30 transition duration-300 text-2xl tracking-wide flex items-center justify-center active:scale-95">
+                <div class="flex flex-col space-y-4 mt-auto relative">
+                    <!-- Loading Overlay ป้องกันการกดเบิ้ล -->
+                    <div id="btn-overlay" class="hidden absolute inset-0 z-10 bg-white/50 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-4 border-blue-600"></div>
+                    </div>
+
+                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-6 rounded-2xl shadow-lg shadow-emerald-500/30 transition duration-300 text-2xl tracking-wide flex items-center justify-center active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-7 h-7 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                         เข้างาน
                     </button>
-                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-rose-500/30 transition duration-300 text-2xl tracking-wide flex items-center justify-center active:scale-95 opacity-50">
+                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-6 rounded-2xl shadow-lg shadow-rose-500/30 transition duration-300 text-2xl tracking-wide flex items-center justify-center active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-7 h-7 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                         ออกงาน
                     </button>
@@ -119,20 +123,36 @@
             </div>
 
             <!-- Tab 2: แจ้งลา/สลับวันหยุด -->
-            <div id="request-tab" class="hidden fade-in">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative">
-                    <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-start">
-                        <svg class="w-5 h-5 mr-2 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <p>ระบบจะตรวจสอบวันหยุดที่ซ้ำซ้อนอัตโนมัติ หากมีพนักงานท่านอื่นจองวันดังกล่าวไปแล้ว จะไม่สามารถส่งคำร้องได้</p>
+            <div id="request-tab" class="hidden fade-in pb-8">
+                
+                <!-- สรุปสิทธิ์วันลา 10 วัน/ปี -->
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-2xl mb-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-800 font-bold text-sm">โควต้าลากิจ/ป่วย/พักร้อน ปีนี้</p>
+                        <p class="text-xs text-blue-600 mt-0.5">ใช้สิทธิ์ไปแล้ว: <span id="quota-used" class="font-bold text-lg">0</span> / 10 วัน</p>
                     </div>
+                    <div id="quota-badge" class="bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg">
+                        เหลือ 10 วัน
+                    </div>
+                </div>
 
+                <!-- แจ้งเตือนวันหยุดร้าน -->
+                <div id="store-holidays-panel" class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-2xl mb-4 hidden">
+                    <p class="font-bold mb-1 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        วันหยุดประจำปีของร้าน
+                    </p>
+                    <ul id="store-holidays-list" class="list-disc list-inside text-amber-700 ml-1"></ul>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">ประเภทคำร้อง</label>
                         <select id="reqType" onchange="toggleSwapDate()" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="ลากิจ">ลากิจ</option>
-                            <option value="ลาป่วย">ลาป่วย</option>
-                            <option value="ลาพักร้อน">ลาพักร้อน</option>
-                            <option value="สลับวันหยุด">สลับวันหยุด</option>
+                            <option value="ลากิจ">ลากิจ (ใช้โควต้า)</option>
+                            <option value="ลาป่วย">ลาป่วย (ใช้โควต้า)</option>
+                            <option value="ลาพักร้อน">ลาพักร้อน (ใช้โควต้า)</option>
+                            <option value="สลับวันหยุด">สลับวันหยุด (ไม่ใช้โควต้า)</option>
                         </select>
                     </div>
 
@@ -148,7 +168,7 @@
 
                     <div class="mb-6">
                         <label class="block text-gray-700 text-sm font-bold mb-2">เหตุผล / รายละเอียด</label>
-                        <textarea id="reqReason" rows="3" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุเหตุผลที่ขอลา..."></textarea>
+                        <textarea id="reqReason" rows="3" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุเหตุผล..."></textarea>
                     </div>
                     <button onclick="submitRequest()" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 active:scale-95 flex justify-center items-center">
                         ส่งคำร้อง
@@ -158,7 +178,7 @@
 
             <!-- Tab 3: ประวัติของฉัน -->
             <div id="history-tab" class="hidden fade-in flex flex-col h-full">
-                <div class="flex bg-gray-200/80 p-1 rounded-xl mb-4 shrink-0">
+                <div class="flex bg-gray-200/80 p-1 rounded-xl mb-4">
                     <button onclick="switchHistorySubTab('hist-time')" id="btn-hist-time" class="flex-1 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-blue-600 transition">ประวัติลงเวลา</button>
                     <button onclick="switchHistorySubTab('hist-req')" id="btn-hist-req" class="flex-1 py-1.5 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">ประวัติคำร้อง</button>
                 </div>
@@ -205,8 +225,11 @@
         let employeesData = [];
         let allRequests = []; 
         let allTimeRecords = [];
+        let storeHolidays = [];
         
         let loggedInEmp = null; 
+        const MAX_LEAVE_DAYS = 10;
+        let usedLeaveDays = 0;
 
         // Live Clock
         setInterval(() => {
@@ -215,6 +238,7 @@
             document.getElementById('live-date').textContent = now.toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }, 1000);
 
+        // UI Utils
         window.showMessage = function(msg, isError = false) {
             const box = document.getElementById('message-box');
             const text = document.getElementById('message-text');
@@ -235,9 +259,16 @@
             if(tabId === 'history-tab') renderMyHistory();
             
             if(tabId === 'request-tab') {
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('reqDate').setAttribute('min', today);
-                document.getElementById('reqSwapDate').setAttribute('min', today);
+                const tmr = new Date();
+                tmr.setDate(tmr.getDate() + 1);
+                const tmrStr = tmr.toISOString().split('T')[0];
+                document.getElementById('reqDate').value = tmrStr;
+                
+                const todayStr = new Date().toISOString().split('T')[0];
+                document.getElementById('reqDate').setAttribute('min', todayStr);
+                document.getElementById('reqSwapDate').setAttribute('min', todayStr);
+                
+                updateLeaveQuotaUI();
             }
         };
 
@@ -270,12 +301,22 @@
             document.getElementById('conflict-modal').classList.add('hidden');
         };
 
+        const formatDateFull = (timestamp) => {
+            if (!timestamp) return { date: 'กำลังบันทึก...', time: '' };
+            const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return {
+                date: d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }),
+                time: d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+            };
+        };
+
         const formatDisplayDate = (dateString) => {
             if (!dateString) return '';
             const date = new Date(dateString);
             return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
         };
 
+        // Auth Init
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -305,15 +346,30 @@
             
             onSnapshot(collection(db, getPath('employees')), (snapshot) => {
                 employeesData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                employeesData.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+                
+                const select = document.getElementById('login-name');
+                if(!loggedInEmp) {
+                    select.innerHTML = employeesData.length > 0 
+                        ? `<option value="">-- กรุณาเลือกชื่อของคุณ --</option>` + employeesData.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('')
+                        : `<option value="">-- ไม่มีรายชื่อในระบบ --</option>`;
+                }
                 checkAutoLogin();
+            }, console.error);
+
+            // โหลดวันหยุดร้าน
+            onSnapshot(collection(db, getPath('store_holidays')), (snapshot) => {
+                storeHolidays = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                storeHolidays.sort((a, b) => new Date(a.date) - new Date(b.date));
+                updateStoreHolidaysUI();
             }, console.error);
 
             onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
                 allTimeRecords = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                // แก้ไขการจัดเรียงให้รองรับข้อมูลที่เพิ่งส่ง (timestamp เป็น null) ให้อยู่บนสุดเสมอ
+                // เรียงจากใหม่ไปเก่า โดยให้ที่ไม่มี timestamp (เพิ่งกด) อยู่บนสุด
                 allTimeRecords.sort((a, b) => {
-                    const timeA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : new Date(a.timestamp).getTime()) : Date.now();
-                    const timeB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : new Date(b.timestamp).getTime()) : Date.now();
+                    const timeA = a.timestamp?.seconds || Number.MAX_SAFE_INTEGER;
+                    const timeB = b.timestamp?.seconds || Number.MAX_SAFE_INTEGER;
                     return timeB - timeA;
                 });
                 
@@ -325,46 +381,87 @@
 
             onSnapshot(collection(db, getPath('requests')), (snapshot) => {
                 allRequests = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                allRequests.sort((a, b) => {
-                    const timeA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : new Date(a.timestamp).getTime()) : Date.now();
-                    const timeB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : new Date(b.timestamp).getTime()) : Date.now();
-                    return timeB - timeA;
-                });
-                if(loggedInEmp) renderMyHistory(); 
+                allRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                if(loggedInEmp) {
+                    renderMyHistory(); 
+                    updateLeaveQuotaUI();
+                }
             }, console.error);
+        }
+
+        function updateStoreHolidaysUI() {
+            const panel = document.getElementById('store-holidays-panel');
+            const list = document.getElementById('store-holidays-list');
+            
+            if (storeHolidays.length === 0) {
+                panel.classList.add('hidden');
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            list.innerHTML = storeHolidays.map(h => 
+                `<li>${formatDisplayDate(h.date)} : ${h.name}</li>`
+            ).join('');
+        }
+
+        function updateLeaveQuotaUI() {
+            if(!loggedInEmp) return;
+            const currentYear = new Date().getFullYear().toString();
+            
+            // นับเฉพาะคำร้องที่ "อนุมัติแล้ว" ของปีนี้ และเป็นประเภทที่ตัดโควต้า
+            const usedLeaves = allRequests.filter(r => 
+                r.name === loggedInEmp.name && 
+                r.status === 'อนุมัติแล้ว' && 
+                r.date.startsWith(currentYear) &&
+                (r.type === 'ลากิจ' || r.type === 'ลาป่วย' || r.type === 'ลาพักร้อน')
+            );
+            
+            usedLeaveDays = usedLeaves.length;
+            const remaining = MAX_LEAVE_DAYS - usedLeaveDays;
+
+            document.getElementById('quota-used').textContent = usedLeaveDays;
+            const badge = document.getElementById('quota-badge');
+            
+            if (remaining > 0) {
+                badge.textContent = `เหลือ ${remaining} วัน`;
+                badge.className = "bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg";
+            } else {
+                badge.textContent = "สิทธิ์หมดแล้ว";
+                badge.className = "bg-rose-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow";
+            }
         }
 
         function checkAutoLogin() {
             if (loggedInEmp) return; 
+            const savedName = localStorage.getItem('myCompanyEmpName');
             const savedPin = localStorage.getItem('myCompanyEmpPin');
-            if (savedPin) {
-                const emp = employeesData.find(e => (e.pin || '1234') === savedPin);
+            
+            if (savedName && savedPin) {
+                const emp = employeesData.find(e => e.name === savedName && (e.pin || '1234') === savedPin);
                 if (emp) {
                     processLoginSuccess(emp, false);
                 } else {
+                    localStorage.removeItem('myCompanyEmpName');
                     localStorage.removeItem('myCompanyEmpPin');
                 }
             }
         }
 
-        window.checkAutoSubmit = function() {
-            const pin = document.getElementById('login-pin').value;
-            if(pin.length === 4) {
-                setTimeout(login, 100); 
-            }
-        }
-
         window.login = function() {
+            const selectedName = document.getElementById('login-name').value;
             const pin = document.getElementById('login-pin').value;
+            
+            if(!selectedName) return showMessage("กรุณาเลือกชื่อของคุณก่อน", true);
             if(!pin || pin.length < 4) return showMessage("กรุณากรอกรหัส PIN ให้ครบ 4 หลัก", true);
 
-            const emp = employeesData.find(e => (e.pin || '1234') === pin);
+            const emp = employeesData.find(e => e.name === selectedName && (e.pin || '1234') === pin);
             
             if (emp) {
+                localStorage.setItem('myCompanyEmpName', emp.name);
                 localStorage.setItem('myCompanyEmpPin', emp.pin || '1234');
                 processLoginSuccess(emp, true);
             } else {
-                showMessage("รหัส PIN ไม่ถูกต้อง หรือไม่มีในระบบ", true);
+                showMessage("รหัส PIN ไม่ถูกต้อง!", true);
                 document.getElementById('login-pin').value = '';
             }
         };
@@ -374,19 +471,23 @@
             document.getElementById('user-display-name').textContent = loggedInEmp.name;
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('main-view').classList.remove('hidden');
+            
             switchTab('time-tab');
             updateTodayStatus(); 
+            updateLeaveQuotaUI();
+            
             document.getElementById('login-pin').value = '';
             if(showMsg) showMessage(`ยินดีต้อนรับคุณ ${loggedInEmp.name}`);
         }
 
         window.confirmLogout = function() {
-            if(confirm("คุณต้องการเปลี่ยนบัญชีผู้ใช้ใช่หรือไม่? (จะต้องกรอกรหัส PIN ใหม่)")) {
+            if(confirm("คุณต้องการเปลี่ยนบัญชีผู้ใช้ใช่หรือไม่?")) {
+                localStorage.removeItem('myCompanyEmpName');
                 localStorage.removeItem('myCompanyEmpPin');
                 loggedInEmp = null;
                 document.getElementById('main-view').classList.add('hidden');
                 document.getElementById('login-view').classList.remove('hidden');
-                document.getElementById('login-pin').focus();
+                document.getElementById('login-name').value = '';
             }
         };
 
@@ -401,43 +502,37 @@
 
             const myTodayRecords = allTimeRecords.filter(r => {
                 if (r.name !== loggedInEmp.name) return false;
-                // อนุโลมให้ข้อมูลที่พึ่งส่ง (pending write / timestamp เป็น null) ถือเป็นวันนี้
-                const dObj = r.timestamp ? (r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp)) : new Date();
-                return dObj.toLocaleDateString('th-TH') === todayStr;
+                if (!r.timestamp) return true; 
+                const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+                return recDate.toLocaleDateString('th-TH') === todayStr;
             });
 
             if (myTodayRecords.length === 0) {
                 panel.className = "mb-6 p-4 rounded-2xl text-center border border-gray-200 bg-gray-50 shadow-inner transition-all duration-300";
-                panel.innerHTML = `<p class="text-gray-600 font-bold text-lg">⚪️ วันนี้ยังไม่ได้ลงเวลา</p><p class="text-gray-500 text-sm mt-1">อย่าลืมกดเข้างานนะครับ/ค่ะ</p>`;
+                panel.innerHTML = `<p class="text-gray-600 font-bold text-lg">⚪️ วันนี้ยังไม่ได้ลงเวลา</p><p class="text-gray-500 text-sm mt-1">กรุณากดปุ่ม "เข้างาน"</p>`;
                 
-                // เปิดปุ่มเข้างาน, ล็อกปุ่มออกงาน
                 btnIn.disabled = false;
-                btnIn.classList.remove('opacity-50', 'cursor-not-allowed');
                 btnOut.disabled = true;
-                btnOut.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 const latest = myTodayRecords[0];
-                const timeObj = latest.timestamp ? (latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp)) : new Date();
-                const timeStr = timeObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                let timeStr = "กำลังบันทึก...";
+                if (latest.timestamp) {
+                    const timeObj = latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp);
+                    timeStr = timeObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + " น.";
+                }
 
                 if (latest.type === 'เข้างาน') {
                     panel.className = "mb-6 p-4 rounded-2xl text-center border border-emerald-200 bg-emerald-50 shadow-sm transition-all duration-300";
-                    panel.innerHTML = `<p class="text-emerald-700 font-bold text-lg">🟢 วันนี้เข้างานแล้ว</p><p class="text-emerald-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr} น.</p>`;
+                    panel.innerHTML = `<p class="text-emerald-700 font-bold text-lg">🟢 วันนี้เข้างานแล้ว</p><p class="text-emerald-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr}</p>`;
                     
-                    // ล็อกปุ่มเข้างาน, เปิดปุ่มออกงาน
                     btnIn.disabled = true;
-                    btnIn.classList.add('opacity-50', 'cursor-not-allowed');
                     btnOut.disabled = false;
-                    btnOut.classList.remove('opacity-50', 'cursor-not-allowed');
                 } else if (latest.type === 'ออกงาน') {
                     panel.className = "mb-6 p-4 rounded-2xl text-center border border-rose-200 bg-rose-50 shadow-sm transition-all duration-300";
-                    panel.innerHTML = `<p class="text-rose-700 font-bold text-lg">🔴 วันนี้ออกงานแล้ว</p><p class="text-rose-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr} น.</p>`;
+                    panel.innerHTML = `<p class="text-rose-700 font-bold text-lg">🔴 วันนี้ออกงานแล้ว</p><p class="text-rose-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr}</p>`;
                     
-                    // ป้องกันการกดออกงานซ้ำ (หากจะมาเข้ากะใหม่ อนุญาตให้กดเข้างานได้)
-                    btnIn.disabled = false;
-                    btnIn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnIn.disabled = true;
                     btnOut.disabled = true;
-                    btnOut.classList.add('opacity-50', 'cursor-not-allowed');
                 }
             }
         };
@@ -452,21 +547,17 @@
                 timeList.innerHTML = `<div class="text-center text-gray-500 py-8 bg-white rounded-2xl shadow-sm border border-gray-100">ยังไม่มีประวัติการลงเวลา</div>`;
             } else {
                 timeList.innerHTML = myTimes.map(record => {
-                    // แก้ปัญหาข้อมูลแสดงไม่ครบ: แยกดึง Date และ Time ออกมาแสดงโดยตรง ไม่ใช้วิธี split string
-                    const dObj = record.timestamp ? (record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp)) : new Date();
-                    const dateStr = dObj.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
-                    const timeStr = dObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-
+                    const dt = formatDateFull(record.timestamp);
                     return `
                     <div class="bg-white border border-gray-100 rounded-2xl p-4 flex justify-between items-center shadow-sm">
                         <div class="flex items-center">
                             <div class="w-3 h-12 rounded-full ${record.type === 'เข้างาน' ? 'bg-emerald-400' : 'bg-rose-400'} mr-4 shrink-0"></div>
                             <div>
-                                <p class="text-sm text-gray-500 font-medium">${dateStr}</p>
-                                <p class="text-xl font-bold text-gray-800">${timeStr} น.</p>
+                                <p class="text-sm text-gray-500 font-medium">${dt.date}</p>
+                                <p class="text-xl font-bold text-gray-800">${dt.time} <span class="text-sm font-normal">น.</span></p>
                             </div>
                         </div>
-                        <span class="text-sm font-bold px-4 py-1.5 rounded-full whitespace-nowrap ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                        <span class="text-sm font-bold px-4 py-1.5 rounded-full ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'} whitespace-nowrap">
                             ${record.type}
                         </span>
                     </div>
@@ -489,18 +580,16 @@
                     if (req.type === 'สลับวันหยุด' && req.swapDate) {
                         dateDisplay += `<br><span class="font-bold text-blue-500">วันที่มาทำแทน:</span> <span class="font-medium text-blue-700">${formatDisplayDate(req.swapDate)}</span>`;
                     }
-                    
-                    const reqDObj = req.timestamp ? (req.timestamp.toDate ? req.timestamp.toDate() : new Date(req.timestamp)) : new Date();
-                    const reqDateStr = reqDObj.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
+                    const dt = formatDateFull(req.timestamp);
 
                     return `
                     <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
                         <div class="flex justify-between items-start mb-3">
                             <div>
                                 <span class="font-bold text-gray-800 text-lg">${req.type}</span>
-                                <span class="text-xs text-gray-500 ml-2 block sm:inline mt-1 sm:mt-0 font-medium">ส่ง: ${reqDateStr}</span>
+                                <span class="text-xs text-gray-500 ml-2 block sm:inline mt-1 sm:mt-0 font-medium">ส่ง: ${dt.date}</span>
                             </div>
-                            <span class="text-xs font-bold px-3 py-1.5 rounded-lg border whitespace-nowrap ${statusColor}">
+                            <span class="text-xs font-bold px-3 py-1.5 rounded-lg border ${statusColor}">
                                 ${req.status}
                             </span>
                         </div>
@@ -517,29 +606,27 @@
         window.recordTime = async function(type) {
             if (!isReady || !loggedInEmp) return showMessage("ไม่พบข้อมูลผู้ใช้งาน", true);
 
-            // Double check ด่านที่ 2: ป้องกันการกดผิดแบบชัวร์ๆ
+            // Double Protection Logic
             const todayStr = new Date().toLocaleDateString('th-TH');
             const myTodayRecords = allTimeRecords.filter(r => {
                 if (r.name !== loggedInEmp.name) return false;
-                const recDate = r.timestamp ? (r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp)) : new Date();
+                if (!r.timestamp) return true; 
+                const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
                 return recDate.toLocaleDateString('th-TH') === todayStr;
             });
 
-            if (type === 'ออกงาน') {
-                if (myTodayRecords.length === 0 || myTodayRecords[0].type !== 'เข้างาน') {
-                    return showMessage("❌ คุณยังไม่ได้กด 'เข้างาน' ของรอบนี้ครับ", true);
-                }
-            } else if (type === 'เข้างาน') {
-                if (myTodayRecords.length > 0 && myTodayRecords[0].type === 'เข้างาน') {
-                    return showMessage("❌ คุณกด 'เข้างาน' ไปแล้ว กรุณากดออกงานก่อนครับ", true);
-                }
+            const latest = myTodayRecords.length > 0 ? myTodayRecords[0] : null;
+
+            if (type === 'ออกงาน' && (!latest || latest.type !== 'เข้างาน')) {
+                return showMessage("คุณยังไม่ได้กด 'เข้างาน' สำหรับวันนี้ครับ", true);
+            }
+            if (type === 'เข้างาน' && latest && latest.type === 'เข้างาน') {
+                return showMessage("คุณได้เข้างานไปแล้ว ไม่สามารถกดซ้ำได้", true);
             }
 
-            const btnId = type === 'เข้างาน' ? 'btn-in' : 'btn-out';
-            const btn = document.getElementById(btnId);
-            const originalText = btn.innerHTML;
-            btn.disabled = true; 
-            btn.innerHTML = `<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto"></div>`;
+            // Lock UI
+            const overlay = document.getElementById('btn-overlay');
+            overlay.classList.remove('hidden');
 
             try {
                 await addDoc(collection(db, getPath('time_records')), {
@@ -550,13 +637,10 @@
                 });
                 
                 showMessage(`บันทึกเวลา${type} สำเร็จ!`);
-
+                // UI จะถูกปลดล็อกและอัปเดตอัตโนมัติจาก onSnapshot
             } catch (error) {
                 showMessage("บันทึกข้อมูลล้มเหลว กรุณาลองใหม่", true);
-            } finally {
-                // ไม่ใช้ btn.disabled = false เพื่อไม่ให้ไปชนกับ updateTodayStatus
-                btn.innerHTML = originalText;
-                updateTodayStatus(); // อัปเดตสถานะปุ่มและข้อความให้ตรงกับข้อมูลจริงอีกครั้ง
+                overlay.classList.add('hidden'); // ปลดล็อกถ้าพัง
             }
         };
 
@@ -572,6 +656,14 @@
             if (reqType === 'สลับวันหยุด' && !reqSwapDate) return showMessage("กรุณาระบุ 'วันที่จะมาทำงานแทน'", true);
             if (reqType === 'สลับวันหยุด' && reqDate === reqSwapDate) return showMessage("วันที่ขอหยุดกับวันที่มาทำงานแทน ต้องไม่ใช่วันเดียวกัน", true);
 
+            // เช็คโควต้าวันลา
+            if ((reqType === 'ลากิจ' || reqType === 'ลาป่วย' || reqType === 'ลาพักร้อน') && usedLeaveDays >= MAX_LEAVE_DAYS) {
+                document.getElementById('conflict-msg').innerHTML = `คุณใช้สิทธิ์ลาประจำปีครบกำหนด <span class="text-rose-600 font-bold">10 วัน</span> แล้ว <br>หากมีเหตุจำเป็นฉุกเฉิน กรุณาติดต่อผู้จัดการโดยตรงครับ`;
+                document.getElementById('conflict-modal').classList.remove('hidden');
+                return;
+            }
+
+            // เช็ควันชนกันกับคนอื่น
             const conflictingRequest = allRequests.find(req => 
                 req.date === reqDate && 
                 req.name !== loggedInEmp.name &&
@@ -579,8 +671,7 @@
             );
 
             if (conflictingRequest) {
-                document.getElementById('conflict-date').textContent = formatDisplayDate(reqDate);
-                document.getElementById('conflict-status').textContent = conflictingRequest.status;
+                document.getElementById('conflict-msg').innerHTML = `ในวันที่ <span class="font-bold text-gray-800">${formatDisplayDate(reqDate)}</span> <br>มีเพื่อนพนักงานจองวันหยุดไปแล้ว (สถานะ: <span class="text-rose-600 font-semibold">${conflictingRequest.status}</span>)<br>กรุณาเลือกวันอื่นครับ`;
                 document.getElementById('conflict-modal').classList.remove('hidden');
                 return;
             }
@@ -608,7 +699,6 @@
                 await addDoc(collection(db, getPath('requests')), requestData);
                 showMessage(`ส่งคำร้องสำเร็จ!`);
                 
-                document.getElementById('reqDate').value = '';
                 document.getElementById('reqReason').value = '';
                 document.getElementById('reqSwapDate').value = '';
                 
