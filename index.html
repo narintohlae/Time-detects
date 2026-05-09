@@ -69,10 +69,11 @@
     </div>
 
     <!-- 2. หน้า Dashboard (ส่วนตัว) -->
-    <div id="main-view" class="hidden bg-white rounded-3xl shadow-lg w-full max-w-md h-[750px] flex flex-col fade-in overflow-hidden relative border border-gray-100">
+    <!-- ปรับความสูงสำหรับมือถือ ให้เลื่อนได้สุด -->
+    <div id="main-view" class="hidden bg-white rounded-3xl shadow-lg w-full max-w-md h-[90vh] max-h-[800px] flex flex-col fade-in overflow-hidden relative border border-gray-100">
         
         <!-- Header -->
-        <div class="bg-blue-600 p-6 text-white rounded-t-3xl flex justify-between items-center shadow-md relative z-10">
+        <div class="bg-blue-600 p-6 text-white rounded-t-3xl flex justify-between items-center shadow-md relative z-10 shrink-0">
             <div>
                 <p class="text-blue-100 text-sm mb-0.5">สวัสดี,</p>
                 <h2 id="user-display-name" class="text-xl font-bold">ชื่อพนักงาน</h2>
@@ -84,7 +85,7 @@
         </div>
         
         <!-- Tabs -->
-        <div class="flex border-b bg-gray-50 shadow-sm relative z-10">
+        <div class="flex border-b bg-gray-50 shadow-sm relative z-10 shrink-0">
             <button onclick="switchTab('time-tab')" id="btn-time-tab" class="tab-btn active flex-1 px-2 py-3 text-center text-sm font-medium text-gray-600 focus:outline-none">ลงเวลา</button>
             <button onclick="switchTab('request-tab')" id="btn-request-tab" class="tab-btn flex-1 px-2 py-3 text-center text-sm font-medium text-gray-600 focus:outline-none">ส่งคำร้อง</button>
             <button onclick="switchTab('history-tab')" id="btn-history-tab" class="tab-btn flex-1 px-2 py-3 text-center text-sm font-medium text-gray-600 focus:outline-none">ประวัติของฉัน</button>
@@ -94,31 +95,37 @@
             
             <!-- Tab 1: ลงเวลา -->
             <div id="time-tab" class="block h-full flex flex-col pb-6 fade-in">
-                <div class="text-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-2">
+                <div class="text-center mb-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-2">
                     <p class="text-gray-500 mb-1 font-medium">เวลาปัจจุบัน</p>
                     <h1 id="live-clock" class="text-5xl font-bold text-gray-800 tracking-wider">00:00</h1>
                     <p id="live-date" class="text-blue-600 mt-2 text-sm font-medium"></p>
                 </div>
+
+                <!-- แผงสถานะประจำวัน (Today's Status) -->
+                <div id="today-status-panel" class="mb-6 p-4 rounded-2xl text-center border border-gray-200 bg-gray-50 shadow-inner transition-all duration-300">
+                    <p class="text-gray-500 text-sm">กำลังตรวจสอบสถานะ...</p>
+                </div>
                 
                 <div class="flex flex-col space-y-4 mt-auto">
-                    <!-- ปุ่มเข้างาน/ออกงาน จะสลับกันแสดงผลโดยอิงจากสถานะล่าสุด -->
-                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-6 rounded-2xl shadow-lg shadow-emerald-500/30 transition duration-300 text-3xl tracking-wide flex items-center justify-center active:scale-95">
-                        <svg class="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-emerald-500/30 transition duration-300 text-2xl tracking-wide flex items-center justify-center active:scale-95">
+                        <svg class="w-7 h-7 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                         เข้างาน
                     </button>
-                    
-                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="hidden w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-6 rounded-2xl shadow-lg shadow-rose-500/30 transition duration-300 text-3xl tracking-wide flex items-center justify-center active:scale-95">
-                        <svg class="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-rose-500/30 transition duration-300 text-2xl tracking-wide flex items-center justify-center active:scale-95 opacity-50">
+                        <svg class="w-7 h-7 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                         ออกงาน
                     </button>
-                    
-                    <p id="status-text" class="text-center text-sm font-medium text-gray-500 mt-4"></p>
                 </div>
             </div>
 
             <!-- Tab 2: แจ้งลา/สลับวันหยุด -->
             <div id="request-tab" class="hidden fade-in">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative">
+                    <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-start">
+                        <svg class="w-5 h-5 mr-2 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>ระบบจะตรวจสอบวันหยุดที่ซ้ำซ้อนอัตโนมัติ หากมีพนักงานท่านอื่นจองวันดังกล่าวไปแล้ว จะไม่สามารถส่งคำร้องได้</p>
+                    </div>
+
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">ประเภทคำร้อง</label>
                         <select id="reqType" onchange="toggleSwapDate()" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
@@ -131,7 +138,7 @@
 
                     <div class="mb-4">
                         <label id="reqDateLabel" class="block text-gray-700 text-sm font-bold mb-2">วันที่ต้องการหยุด (วันที่ลา)</label>
-                        <input type="date" id="reqDate" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="date" id="reqDate" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
 
                     <div id="swapDateField" class="mb-4 hidden fade-in bg-blue-50 p-4 rounded-xl border border-blue-100">
@@ -151,7 +158,7 @@
 
             <!-- Tab 3: ประวัติของฉัน -->
             <div id="history-tab" class="hidden fade-in flex flex-col h-full">
-                <div class="flex bg-gray-200/80 p-1 rounded-xl mb-4">
+                <div class="flex bg-gray-200/80 p-1 rounded-xl mb-4 shrink-0">
                     <button onclick="switchHistorySubTab('hist-time')" id="btn-hist-time" class="flex-1 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-blue-600 transition">ประวัติลงเวลา</button>
                     <button onclick="switchHistorySubTab('hist-req')" id="btn-hist-req" class="flex-1 py-1.5 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">ประวัติคำร้อง</button>
                 </div>
@@ -228,16 +235,9 @@
             if(tabId === 'history-tab') renderMyHistory();
             
             if(tabId === 'request-tab') {
-                // เซ็ตค่า Default วันลาให้เป็น "วันพรุ่งนี้" (ลดขั้นตอนพนักงาน)
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tmrStr = tomorrow.toISOString().split('T')[0];
-                
-                const reqDateInput = document.getElementById('reqDate');
-                if(!reqDateInput.value) reqDateInput.value = tmrStr; 
-                
-                reqDateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
-                document.getElementById('reqSwapDate').setAttribute('min', new Date().toISOString().split('T')[0]);
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('reqDate').setAttribute('min', today);
+                document.getElementById('reqSwapDate').setAttribute('min', today);
             }
         };
 
@@ -246,6 +246,7 @@
             document.getElementById('hist-req').classList.add('hidden');
             document.getElementById('btn-hist-time').className = "flex-1 py-1.5 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition";
             document.getElementById('btn-hist-req').className = "flex-1 py-1.5 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition";
+            
             document.getElementById(tabId).classList.remove('hidden');
             document.getElementById(`btn-${tabId}`).className = "flex-1 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-blue-600 transition";
         };
@@ -267,14 +268,6 @@
 
         window.closeConflictModal = function() {
             document.getElementById('conflict-modal').classList.add('hidden');
-        };
-
-        const formatDate = (timestamp, includeTime = false) => {
-            if (!timestamp) return 'กำลังบันทึก...';
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            let opts = { day: '2-digit', month: 'short', year: '2-digit' };
-            if(includeTime) opts = { ...opts, hour: '2-digit', minute: '2-digit' };
-            return date.toLocaleString('th-TH', opts);
         };
 
         const formatDisplayDate = (dateString) => {
@@ -321,7 +314,7 @@
                 
                 if(loggedInEmp) {
                     renderMyHistory(); 
-                    updateSmartButtons(); // อัปเดตปุ่มฉลาดเมื่อข้อมูลใหม่เข้ามา
+                    updateTodayStatus(); 
                 }
             }, console.error);
 
@@ -373,7 +366,7 @@
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('main-view').classList.remove('hidden');
             switchTab('time-tab');
-            updateSmartButtons(); // อัปเดตปุ่มให้ฉลาด
+            updateTodayStatus(); 
             document.getElementById('login-pin').value = '';
             if(showMsg) showMessage(`ยินดีต้อนรับคุณ ${loggedInEmp.name}`);
         }
@@ -388,17 +381,15 @@
             }
         };
 
-        // --- NEW: ปุ่มลงเวลาอัจฉริยะ (Smart Buttons) ---
-        window.updateSmartButtons = function() {
+        window.updateTodayStatus = function() {
             if (!loggedInEmp) return;
 
+            const panel = document.getElementById('today-status-panel');
             const btnIn = document.getElementById('btn-in');
             const btnOut = document.getElementById('btn-out');
-            const statusText = document.getElementById('status-text');
             
             const todayStr = new Date().toLocaleDateString('th-TH');
 
-            // หาประวัติล่าสุดเฉพาะของวันนี้ และของตัวเอง
             const myTodayRecords = allTimeRecords.filter(r => {
                 if (r.name !== loggedInEmp.name || !r.timestamp) return false;
                 const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
@@ -406,28 +397,25 @@
             });
 
             if (myTodayRecords.length === 0) {
-                // ยังไม่ลงเวลา: โชว์แค่ปุ่มเข้างาน
-                btnIn.classList.remove('hidden');
-                btnOut.classList.add('hidden');
-                statusText.innerHTML = "คุณยังไม่ได้เข้างานในวันนี้";
-                statusText.className = "text-center text-sm font-medium text-gray-500 mt-4";
+                panel.className = "mb-6 p-4 rounded-2xl text-center border border-gray-200 bg-gray-50 shadow-inner transition-all duration-300";
+                panel.innerHTML = `<p class="text-gray-600 font-bold text-lg">⚪️ วันนี้ยังไม่ได้ลงเวลา</p><p class="text-gray-500 text-sm mt-1">อย่าลืมกดเข้างานนะครับ/ค่ะ</p>`;
+                btnIn.classList.remove('opacity-50');
+                btnOut.classList.add('opacity-50');
             } else {
                 const latest = myTodayRecords[0];
                 const timeObj = latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp);
                 const timeStr = timeObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
                 if (latest.type === 'เข้างาน') {
-                    // เข้างานแล้ว: ซ่อนปุ่มเข้างาน โชว์แค่ปุ่มออกงาน
-                    btnIn.classList.add('hidden');
-                    btnOut.classList.remove('hidden');
-                    statusText.innerHTML = `🟢 เข้างานแล้วเมื่อเวลา ${timeStr} น.`;
-                    statusText.className = "text-center text-sm font-bold text-emerald-600 mt-4";
+                    panel.className = "mb-6 p-4 rounded-2xl text-center border border-emerald-200 bg-emerald-50 shadow-sm transition-all duration-300";
+                    panel.innerHTML = `<p class="text-emerald-700 font-bold text-lg">🟢 วันนี้เข้างานแล้ว</p><p class="text-emerald-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr} น.</p>`;
+                    btnIn.classList.add('opacity-50');
+                    btnOut.classList.remove('opacity-50');
                 } else if (latest.type === 'ออกงาน') {
-                    // ออกงานแล้ว: โชว์ปุ่มเข้างาน (เผื่อกลับมาเข้า OT) แต่ออกสีดรอปๆ ไว้
-                    btnIn.classList.remove('hidden');
-                    btnOut.classList.add('hidden');
-                    statusText.innerHTML = `🔴 ออกงานแล้วเมื่อเวลา ${timeStr} น.`;
-                    statusText.className = "text-center text-sm font-bold text-rose-600 mt-4";
+                    panel.className = "mb-6 p-4 rounded-2xl text-center border border-rose-200 bg-rose-50 shadow-sm transition-all duration-300";
+                    panel.innerHTML = `<p class="text-rose-700 font-bold text-lg">🔴 วันนี้ออกงานแล้ว</p><p class="text-rose-600 font-medium text-sm mt-1">เมื่อเวลา ${timeStr} น.</p>`;
+                    btnIn.classList.remove('opacity-50');
+                    btnOut.classList.remove('opacity-50');
                 }
             }
         };
@@ -441,20 +429,26 @@
             if (myTimes.length === 0) {
                 timeList.innerHTML = `<div class="text-center text-gray-500 py-8 bg-white rounded-2xl shadow-sm border border-gray-100">ยังไม่มีประวัติการลงเวลา</div>`;
             } else {
-                timeList.innerHTML = myTimes.map(record => `
+                timeList.innerHTML = myTimes.map(record => {
+                    // แก้ปัญหาข้อมูลแสดงไม่ครบ: แยกดึง Date และ Time ออกมาแสดงโดยตรง ไม่ใช้วิธี split string
+                    const dObj = record.timestamp ? (record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp)) : new Date();
+                    const dateStr = dObj.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
+                    const timeStr = dObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+                    return `
                     <div class="bg-white border border-gray-100 rounded-2xl p-4 flex justify-between items-center shadow-sm">
                         <div class="flex items-center">
-                            <div class="w-3 h-12 rounded-full ${record.type === 'เข้างาน' ? 'bg-emerald-400' : 'bg-rose-400'} mr-4"></div>
+                            <div class="w-3 h-12 rounded-full ${record.type === 'เข้างาน' ? 'bg-emerald-400' : 'bg-rose-400'} mr-4 shrink-0"></div>
                             <div>
-                                <p class="text-sm text-gray-500 font-medium">${formatDate(record.timestamp, false).split(' ')[0]}</p>
-                                <p class="text-xl font-bold text-gray-800">${formatDate(record.timestamp, true).split(' ')[1]} น.</p>
+                                <p class="text-sm text-gray-500 font-medium">${dateStr}</p>
+                                <p class="text-xl font-bold text-gray-800">${timeStr} น.</p>
                             </div>
                         </div>
-                        <span class="text-sm font-bold px-4 py-1.5 rounded-full ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                        <span class="text-sm font-bold px-4 py-1.5 rounded-full whitespace-nowrap ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
                             ${record.type}
                         </span>
                     </div>
-                `).join('');
+                `}).join('');
             }
 
             const myReqs = allRequests.filter(req => req.name === loggedInEmp.name);
@@ -473,15 +467,18 @@
                     if (req.type === 'สลับวันหยุด' && req.swapDate) {
                         dateDisplay += `<br><span class="font-bold text-blue-500">วันที่มาทำแทน:</span> <span class="font-medium text-blue-700">${formatDisplayDate(req.swapDate)}</span>`;
                     }
+                    
+                    const reqDObj = req.timestamp ? (req.timestamp.toDate ? req.timestamp.toDate() : new Date(req.timestamp)) : new Date();
+                    const reqDateStr = reqDObj.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
 
                     return `
                     <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
                         <div class="flex justify-between items-start mb-3">
                             <div>
                                 <span class="font-bold text-gray-800 text-lg">${req.type}</span>
-                                <span class="text-xs text-gray-500 ml-2 block sm:inline mt-1 sm:mt-0 font-medium">ส่ง: ${formatDate(req.timestamp, false)}</span>
+                                <span class="text-xs text-gray-500 ml-2 block sm:inline mt-1 sm:mt-0 font-medium">ส่ง: ${reqDateStr}</span>
                             </div>
-                            <span class="text-xs font-bold px-3 py-1.5 rounded-lg border ${statusColor}">
+                            <span class="text-xs font-bold px-3 py-1.5 rounded-lg border whitespace-nowrap ${statusColor}">
                                 ${req.status}
                             </span>
                         </div>
@@ -513,7 +510,6 @@
                 });
                 
                 showMessage(`บันทึกเวลา${type} สำเร็จ!`);
-                // หลังจากบันทึก ปุ่มจะสลับตัวเองให้อัตโนมัติด้วยฟังก์ชัน updateSmartButtons
 
             } catch (error) {
                 showMessage("บันทึกข้อมูลล้มเหลว กรุณาลองใหม่", true);
