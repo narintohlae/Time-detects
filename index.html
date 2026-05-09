@@ -310,7 +310,12 @@
 
             onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
                 allTimeRecords = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                allTimeRecords.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                // แก้ไขการจัดเรียงให้รองรับข้อมูลที่เพิ่งส่ง (timestamp เป็น null) ให้อยู่บนสุดเสมอ
+                allTimeRecords.sort((a, b) => {
+                    const timeA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : new Date(a.timestamp).getTime()) : Date.now();
+                    const timeB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : new Date(b.timestamp).getTime()) : Date.now();
+                    return timeB - timeA;
+                });
                 
                 if(loggedInEmp) {
                     renderMyHistory(); 
@@ -320,7 +325,11 @@
 
             onSnapshot(collection(db, getPath('requests')), (snapshot) => {
                 allRequests = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                allRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                allRequests.sort((a, b) => {
+                    const timeA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : new Date(a.timestamp).getTime()) : Date.now();
+                    const timeB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : new Date(b.timestamp).getTime()) : Date.now();
+                    return timeB - timeA;
+                });
                 if(loggedInEmp) renderMyHistory(); 
             }, console.error);
         }
@@ -391,9 +400,10 @@
             const todayStr = new Date().toLocaleDateString('th-TH');
 
             const myTodayRecords = allTimeRecords.filter(r => {
-                if (r.name !== loggedInEmp.name || !r.timestamp) return false;
-                const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
-                return recDate.toLocaleDateString('th-TH') === todayStr;
+                if (r.name !== loggedInEmp.name) return false;
+                // อนุโลมให้ข้อมูลที่พึ่งส่ง (pending write / timestamp เป็น null) ถือเป็นวันนี้
+                const dObj = r.timestamp ? (r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp)) : new Date();
+                return dObj.toLocaleDateString('th-TH') === todayStr;
             });
 
             if (myTodayRecords.length === 0) {
@@ -407,7 +417,7 @@
                 btnOut.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 const latest = myTodayRecords[0];
-                const timeObj = latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp);
+                const timeObj = latest.timestamp ? (latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp)) : new Date();
                 const timeStr = timeObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
                 if (latest.type === 'เข้างาน') {
@@ -510,8 +520,8 @@
             // Double check ด่านที่ 2: ป้องกันการกดผิดแบบชัวร์ๆ
             const todayStr = new Date().toLocaleDateString('th-TH');
             const myTodayRecords = allTimeRecords.filter(r => {
-                if (r.name !== loggedInEmp.name || !r.timestamp) return false;
-                const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+                if (r.name !== loggedInEmp.name) return false;
+                const recDate = r.timestamp ? (r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp)) : new Date();
                 return recDate.toLocaleDateString('th-TH') === todayStr;
             });
 
@@ -544,8 +554,9 @@
             } catch (error) {
                 showMessage("บันทึกข้อมูลล้มเหลว กรุณาลองใหม่", true);
             } finally {
-                btn.disabled = false; 
+                // ไม่ใช้ btn.disabled = false เพื่อไม่ให้ไปชนกับ updateTodayStatus
                 btn.innerHTML = originalText;
+                updateTodayStatus(); // อัปเดตสถานะปุ่มและข้อความให้ตรงกับข้อมูลจริงอีกครั้ง
             }
         };
 
