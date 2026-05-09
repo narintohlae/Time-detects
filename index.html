@@ -33,9 +33,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">ไม่สามารถเลือกวันนี้ได้</h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">วันหยุดชนกัน!</h3>
             <p id="conflict-msg" class="text-gray-600 mb-8 leading-relaxed">
-                เนื่องจากในวันที่ <span id="conflict-date" class="font-bold text-gray-800"></span> มีพนักงานท่านอื่นที่ได้รับอนุมัติให้หยุด/ลาแล้ว กรุณาเลือกวันอื่น
+                ในวันที่ <span id="conflict-date" class="font-bold text-gray-800"></span> <br>
+                มีเพื่อนพนักงานส่งคำร้องจองวันหยุดไปแล้ว (สถานะ: <span id="conflict-status" class="text-rose-600 font-semibold"></span>)<br>
+                กรุณาเลือกวันอื่นครับ
             </p>
             <button onclick="closeConflictModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 rounded-xl transition active:scale-95">
                 ตกลง, ฉันเข้าใจแล้ว
@@ -115,7 +117,7 @@
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative">
                     <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-start">
                         <svg class="w-5 h-5 mr-2 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <p>ระบบจะตรวจสอบวันหยุดที่ซ้ำซ้อนอัตโนมัติ หากมีพนักงานท่านอื่นหยุดในวันดังกล่าวแล้ว จะไม่สามารถส่งคำร้องได้</p>
+                        <p>ระบบจะตรวจสอบวันหยุดที่ซ้ำซ้อนอัตโนมัติ หากมีพนักงานท่านอื่นจองวันดังกล่าวไปแล้ว จะไม่สามารถส่งคำร้องได้</p>
                     </div>
 
                     <div class="mb-4">
@@ -137,12 +139,11 @@
                     <div id="swapDateField" class="mb-4 hidden fade-in bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <label class="block text-blue-800 text-sm font-bold mb-2">วันที่จะมาทำงานแทน (วันชดเชย)</label>
                         <input type="date" id="reqSwapDate" class="shadow-sm border border-blue-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                        <p class="text-xs text-blue-600 mt-2 font-medium">กรุณาระบุวันที่คุณจะมาทำงานชดเชยวันที่คุณขอหยุดไป</p>
                     </div>
 
                     <div class="mb-6">
                         <label class="block text-gray-700 text-sm font-bold mb-2">เหตุผล / รายละเอียด</label>
-                        <textarea id="reqReason" rows="3" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุเหตุผลที่ขอลา หรือรายละเอียดการสลับวันหยุด..."></textarea>
+                        <textarea id="reqReason" rows="3" class="shadow-sm border border-gray-200 rounded-xl w-full py-2.5 px-3 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุเหตุผลที่ขอลา..."></textarea>
                     </div>
                     <button onclick="submitRequest()" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition duration-200 active:scale-95 flex justify-center items-center">
                         ส่งคำร้อง
@@ -229,7 +230,6 @@
             
             if(tabId === 'history-tab') renderMyHistory();
             
-            // Set min date for request to today
             if(tabId === 'request-tab') {
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('reqDate').setAttribute('min', today);
@@ -258,7 +258,7 @@
             } else {
                 swapDateField.classList.add('hidden');
                 reqDateLabel.textContent = "วันที่ต้องการหยุด (วันที่ลา)";
-                document.getElementById('reqSwapDate').value = ''; // เคลียร์ค่า
+                document.getElementById('reqSwapDate').value = ''; 
             }
         };
 
@@ -308,20 +308,17 @@
         function loadAllData() {
             if (!currentUser) return;
             
-            // โหลดรายชื่อพนักงาน
             onSnapshot(collection(db, getPath('employees')), (snapshot) => {
                 employeesData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 checkAutoLogin();
             }, console.error);
 
-            // โหลด Time Records
             onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
                 allTimeRecords = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 allTimeRecords.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 if(loggedInEmp) renderMyHistory(); 
             }, console.error);
 
-            // โหลด Requests
             onSnapshot(collection(db, getPath('requests')), (snapshot) => {
                 allRequests = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 allRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
@@ -329,7 +326,6 @@
             }, console.error);
         }
 
-        // --- Login & Auto Login Logic ---
         function checkAutoLogin() {
             if (loggedInEmp) return; 
             const savedPin = localStorage.getItem('myCompanyEmpPin');
@@ -385,11 +381,9 @@
             }
         };
 
-        // --- Render History ---
         window.renderMyHistory = function() {
             if (!loggedInEmp) return;
 
-            // 1. Time
             const myTimes = allTimeRecords.filter(r => r.name === loggedInEmp.name);
             const timeList = document.getElementById('my-time-list');
             
@@ -412,7 +406,6 @@
                 `).join('');
             }
 
-            // 2. Request
             const myReqs = allRequests.filter(req => req.name === loggedInEmp.name);
             const reqList = document.getElementById('my-req-list');
 
@@ -426,7 +419,6 @@
 
                     let dateDisplay = `<span class="font-bold text-gray-500">วันที่ขอหยุด:</span> <span class="font-medium">${formatDisplayDate(req.date)}</span>`;
                     
-                    // ถ้าเป็นการสลับวันหยุด ให้แสดงวันที่มาทำแทนด้วย
                     if (req.type === 'สลับวันหยุด' && req.swapDate) {
                         dateDisplay += `<br><span class="font-bold text-blue-500">วันที่มาทำแทน:</span> <span class="font-medium text-blue-700">${formatDisplayDate(req.swapDate)}</span>`;
                     }
@@ -452,7 +444,6 @@
             }
         };
 
-        // --- Actions ---
         window.recordTime = async function(type) {
             if (!isReady || !loggedInEmp) return showMessage("ไม่พบข้อมูลผู้ใช้งาน", true);
 
@@ -493,32 +484,28 @@
             if (reqType === 'สลับวันหยุด' && !reqSwapDate) return showMessage("กรุณาระบุ 'วันที่จะมาทำงานแทน'", true);
             if (reqType === 'สลับวันหยุด' && reqDate === reqSwapDate) return showMessage("วันที่ขอหยุดกับวันที่มาทำงานแทน ต้องไม่ใช่วันเดียวกัน", true);
 
-            // --- CONFLICT CHECK LOGIC ---
-            // หาว่ามีใครได้รับอนุมัติให้หยุดในวันที่เราจะขอหยุด หรือวันที่เราจะมาทำแทน หรือไม่
-            // วันที่เช็ค 1: reqDate (วันที่เราจะขอหยุด) - ต้องไม่มีคนหยุด
-            // วันที่เช็ค 2: reqSwapDate (วันที่จะมาทำแทน) - อันนี้คนอื่นหยุดได้ ไม่เป็นไร เพราะเราจะมาเสียบแทนให้ 
-            // ดังนั้นเราจะเช็คแค่ reqDate เท่านั้นว่ามีคนชิงหยุดไปก่อนแล้วหรือยัง
-            
+            // --- CONFLICT CHECK LOGIC (UPDATED) ---
+            // เช็คว่ามีใครจองวัน reqDate ไว้แล้วหรือไม่ (ทั้งคนที่รออนุมัติ และอนุมัติแล้ว)
+            // ยกเว้น: คำร้องที่ผู้จัดการกด "ไม่อนุมัติ" ไปแล้ว ถือว่าว่าง
             const conflictingRequest = allRequests.find(req => 
                 req.date === reqDate && 
-                req.status === 'อนุมัติแล้ว' && 
                 req.name !== loggedInEmp.name &&
-                (req.type === 'ลากิจ' || req.type === 'ลาป่วย' || req.type === 'ลาพักร้อน' || req.type === 'สลับวันหยุด')
+                (req.status === 'รออนุมัติ' || req.status === 'อนุมัติแล้ว')
             );
 
             if (conflictingRequest) {
                 document.getElementById('conflict-date').textContent = formatDisplayDate(reqDate);
+                document.getElementById('conflict-status').textContent = conflictingRequest.status;
                 document.getElementById('conflict-modal').classList.remove('hidden');
                 return;
             }
-            // -----------------------------
+            // -------------------------------------
 
             const btn = document.getElementById('btn-submit-req');
             const originalText = btn.innerHTML;
             btn.disabled = true; 
             btn.innerHTML = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>`;
 
-            // เตรียมข้อมูลที่จะส่ง (ถ้าไม่ใช่สลับวันหยุด จะไม่ส่ง reqSwapDate ไป)
             const requestData = {
                 name: loggedInEmp.name, 
                 type: reqType, 
@@ -530,14 +517,13 @@
             };
 
             if (reqType === 'สลับวันหยุด') {
-                requestData.swapDate = reqSwapDate; // เพิ่มวันที่มาทำแทนเข้าไปด้วย
+                requestData.swapDate = reqSwapDate; 
             }
 
             try {
                 await addDoc(collection(db, getPath('requests')), requestData);
                 showMessage(`ส่งคำร้องสำเร็จ!`);
                 
-                // เคลียร์ฟอร์ม
                 document.getElementById('reqDate').value = '';
                 document.getElementById('reqReason').value = '';
                 document.getElementById('reqSwapDate').value = '';
