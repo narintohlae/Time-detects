@@ -547,10 +547,11 @@
                     panel.className = "mb-5 p-5 rounded-3xl text-center border border-rose-100 bg-rose-50 shadow-sm";
                     panel.innerHTML = `<p class="text-rose-700 font-bold text-lg">🔴 ออกงานแล้ว (${timeStr})</p>`;
                     
-                    btnIn.disabled = true;
+                    // สลับกลับมาโชว์ปุ่ม "เข้างาน" เผื่อพนักงานต้องการเข้า OT หรือกะบ่าย
+                    btnIn.disabled = false;
                     btnOut.disabled = true;
-                    btnIn.classList.add('hidden');
-                    btnOut.classList.remove('hidden');
+                    btnIn.classList.remove('hidden');
+                    btnOut.classList.add('hidden'); // ซ่อนปุ่มออกงาน
                 }
             }
         };
