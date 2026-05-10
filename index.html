@@ -372,15 +372,9 @@
                 checkAutoLogin();
             }, console.error);
 
-            // โหลดวันหยุดร้าน
-            onSnapshot(collection(db, getPath('store_holidays')), (snapshot) => {
-                storeHolidays = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                storeHolidays.sort((a, b) => new Date(a.date) - new Date(b.date));
-                updateStoreHolidaysUI();
-            }, console.error);
-
+// ส่วนที่ 1: การลงเวลา
             onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
-                allTimeRecords = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                allTimeRecords = snapshot.docs.map(doc => ({id: doc.id, ...doc.data({ serverTimestamps: 'estimate' })}));
                 allTimeRecords.sort((a, b) => {
                     const timeA = a.timestamp?.seconds || Number.MAX_SAFE_INTEGER;
                     const timeB = b.timestamp?.seconds || Number.MAX_SAFE_INTEGER;
@@ -393,8 +387,9 @@
                 }
             }, console.error);
 
+            // ส่วนที่ 2: คำร้อง
             onSnapshot(collection(db, getPath('requests')), (snapshot) => {
-                allRequests = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                allRequests = snapshot.docs.map(doc => ({id: doc.id, ...doc.data({ serverTimestamps: 'estimate' })}));
                 allRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 if(loggedInEmp) {
                     renderMyHistory(); 
