@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ระบบพนักงาน - บนมือถือ</title>
+    
+    <!-- PWA Meta Tags & Manifest -->
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ระบบพนักงาน">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <link rel="manifest" href="manifest.json">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -660,12 +669,10 @@
             const reqDate = document.getElementById('reqDate').value;
             const reqSwapDate = document.getElementById('reqSwapDate').value;
 
-            // ไม่ต้องเช็คเหตุผลแล้ว
             if (!reqDate) return showMessage("กรุณาระบุวันที่ต้องการหยุด", true);
             if (reqType === 'สลับวันหยุด' && !reqSwapDate) return showMessage("กรุณาระบุ 'วันที่จะมาทำงานแทน'", true);
             if (reqType === 'สลับวันหยุด' && reqDate === reqSwapDate) return showMessage("วันที่ขอหยุดกับวันที่มาทำงานแทน ต้องไม่ใช่วันเดียวกัน", true);
 
-            // เช็คโควต้าวันลา
             if (reqType === 'ลางาน' && usedLeaveDays >= MAX_LEAVE_DAYS) {
                 document.getElementById('conflict-msg').innerHTML = `คุณใช้สิทธิ์ลาประจำปีครบโควต้า <span class="text-rose-600 font-bold">10 วัน</span> แล้ว <br>หากมีเหตุจำเป็นฉุกเฉิน กรุณาติดต่อผู้จัดการโดยตรงครับ`;
                 document.getElementById('conflict-modal').classList.remove('hidden');
@@ -693,7 +700,6 @@
                 name: loggedInEmp.name, 
                 type: reqType, 
                 date: reqDate,
-                // ตัด reason ออกไป
                 status: 'รออนุมัติ', 
                 timestamp: serverTimestamp(), 
                 userId: currentUser.uid
@@ -718,6 +724,15 @@
                 btn.innerHTML = originalText;
             }
         };
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered'))
+                    .catch(err => console.error('Service Worker Registration Failed', err));
+            });
+        }
     </script>
 </body>
 </html>
