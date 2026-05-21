@@ -1,732 +1,805 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบพนักงาน - บนมือถือ</title>
-    
-    <!-- PWA Meta Tags & Manifest -->
-    <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ระบบพนักงาน">
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-    <link rel="manifest" href="manifest.json">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeSync - ระบบบันทึกเวลาเข้าออกงาน</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .fade-in { animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
-        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        /* Style for bottom nav active state */
-        .nav-btn { color: #9ca3af; transition: color 0.2s; }
-        .nav-btn.active { color: #2563eb; }
-        .nav-btn.active svg { stroke-width: 2.5; }
+        .clock-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+        .pulse-effect {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.05); }
+        }
     </style>
 </head>
-<body class="h-screen w-full flex justify-center bg-gray-100 overflow-hidden">
+<body class="h-full font-sans antialiased text-slate-800">
 
-    <!-- Message Box -->
-    <div id="message-box" class="hidden fixed top-4 right-4 left-4 max-w-md mx-auto shadow-2xl border-l-4 p-4 rounded-2xl z-[60] transition-all duration-300">
-        <p id="message-text" class="text-gray-800 font-medium"></p>
-    </div>
-
-    <!-- Conflict Warning Modal -->
-    <div id="conflict-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-8 w-full max-w-sm modal-enter text-center">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-rose-100 mb-5">
-                <svg class="h-8 w-8 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">ไม่สามารถส่งคำร้องได้</h3>
-            <p id="conflict-msg" class="text-gray-600 mb-6 text-sm leading-relaxed"></p>
-            <button onclick="closeConflictModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 rounded-2xl transition active:scale-95">
-                ตกลง, ฉันเข้าใจแล้ว
-            </button>
-        </div>
-    </div>
-
-    <!-- 1. หน้า Login -->
-    <div id="login-view" class="w-full h-full flex flex-col justify-center items-center p-6 bg-white z-30 fade-in absolute inset-0">
-        <div class="w-full max-w-sm text-center mb-8">
-            <div class="inline-block bg-blue-50 p-5 rounded-full mb-5 shadow-inner">
-                <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
-            </div>
-            <h1 class="text-3xl font-bold text-gray-800">เข้าสู่ระบบ</h1>
-            <p id="auth-status" class="text-sm text-gray-500 mt-2">กำลังตรวจสอบข้อมูล...</p>
-        </div>
-
-        <div class="w-full max-w-sm space-y-6" id="login-form">
-            <div class="bg-gray-50 p-5 rounded-3xl border border-gray-100">
-                <label class="block text-[11px] font-bold text-gray-500 mb-1.5 ml-1">1. เลือกชื่อของคุณ</label>
-                <select id="login-name" class="w-full border border-gray-200 p-4 rounded-2xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold appearance-none shadow-sm">
-                    <option value="">-- โหลดรายชื่อ... --</option>
-                </select>
-            </div>
-            <div class="bg-blue-50 p-5 rounded-3xl border border-blue-100">
-                <label class="block text-[11px] font-bold text-blue-600 mb-1.5 ml-1">2. รหัส PIN 4 หลัก</label>
-                <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="****" class="w-full border border-blue-200 p-4 rounded-2xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-center text-3xl tracking-[0.8em] font-bold text-gray-700 shadow-sm" oninput="if(this.value.length===4) login();">
-            </div>
-            <button onclick="login()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg transition active:scale-95 text-lg mt-2">
-                ยืนยันเข้าสู่ระบบ
-            </button>
-        </div>
-    </div>
-
-    <!-- 2. หน้า Dashboard (ส่วนตัว) -->
-    <div id="main-view" class="hidden w-full max-w-md h-full bg-gray-50 flex flex-col relative overflow-hidden shadow-2xl sm:rounded-3xl sm:h-[90vh] sm:my-auto">
-        
-        <!-- Header -->
-        <div class="bg-blue-600 pt-10 pb-6 px-6 text-white rounded-b-[40px] shadow-md z-10 flex justify-between items-start">
-            <div>
-                <p class="text-blue-200 text-xs font-medium mb-1">ยินดีต้อนรับกลับมา,</p>
-                <h2 id="user-display-name" class="text-2xl font-bold leading-tight">ชื่อพนักงาน</h2>
-            </div>
-            <button onclick="confirmLogout()" class="bg-white/20 hover:bg-white/30 p-2.5 rounded-2xl backdrop-blur-sm transition active:scale-95">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-            </button>
-        </div>
-
-        <!-- Scrollable Content Area -->
-        <div class="flex-1 overflow-y-auto pb-24 px-5 pt-6 hide-scrollbar">
-            
-            <!-- Tab 1: ลงเวลา -->
-            <div id="time-tab" class="block fade-in h-full flex flex-col">
-                <div class="text-center mb-6">
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">เวลาปัจจุบัน</p>
-                    <h1 id="live-clock" class="text-[3.5rem] font-bold text-gray-800 leading-none tracking-tight">00:00</h1>
-                    <p id="live-date" class="text-blue-600 mt-2 text-sm font-bold"></p>
-                </div>
-
-                <!-- แผงสถานะประจำวัน -->
-                <div id="today-status-panel" class="mb-8 p-5 rounded-3xl text-center border border-gray-100 bg-white shadow-sm transition-all duration-300">
-                    <p class="text-gray-400 text-sm font-medium">กำลังตรวจสอบสถานะ...</p>
-                </div>
-                
-                <div class="flex flex-col space-y-4 mt-auto relative mb-4">
-                    <!-- Loading Overlay -->
-                    <div id="btn-overlay" class="hidden absolute inset-0 z-10 bg-gray-50/80 backdrop-blur-sm rounded-3xl flex items-center justify-center">
-                        <div class="animate-spin rounded-full h-10 w-10 border-b-4 border-blue-600"></div>
-                    </div>
-
-                    <button onclick="recordTime('เข้างาน')" id="btn-in" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-7 rounded-3xl shadow-[0_8px_30px_rgb(16,185,129,0.3)] transition active:scale-95 text-2xl tracking-wide flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                        เข้างาน
-                    </button>
-                    <button onclick="recordTime('ออกงาน')" id="btn-out" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-7 rounded-3xl shadow-[0_8px_30px_rgb(244,63,94,0.3)] transition active:scale-95 text-2xl tracking-wide flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        ออกงาน
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tab 2: คำร้องต่างๆ -->
-            <div id="request-tab" class="hidden fade-in">
-                
-                <!-- สรุปสิทธิ์วันลา -->
-                <div class="bg-gradient-to-r from-blue-600 to-blue-500 p-5 rounded-3xl mb-5 shadow-lg flex items-center justify-between text-white">
-                    <div>
-                        <p class="text-blue-100 font-medium text-xs">โควต้าลางานประจำปี</p>
-                        <p class="mt-1 text-sm">ใช้ไปแล้ว: <span id="quota-used" class="font-black text-2xl">0</span> / 10</p>
-                    </div>
-                    <div id="quota-badge" class="bg-white/20 backdrop-blur-sm font-bold text-sm px-4 py-2 rounded-xl">
-                        เหลือ 10 วัน
-                    </div>
-                </div>
-
-                <!-- แจ้งเตือนวันหยุดร้าน -->
-                <div id="store-holidays-panel" class="bg-amber-50 border border-amber-200 text-amber-800 text-sm p-4 rounded-3xl mb-5 hidden shadow-sm">
-                    <p class="font-bold mb-2 flex items-center">
-                        <svg class="w-5 h-5 mr-1.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        วันหยุดประจำปีของร้าน
-                    </p>
-                    <ul id="store-holidays-list" class="list-disc list-inside text-amber-700/80 font-medium space-y-1"></ul>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
-                    <div class="mb-5">
-                        <label class="block text-[11px] font-bold text-gray-500 mb-1.5 ml-1">ประเภทคำร้อง</label>
-                        <select id="reqType" onchange="toggleSwapDate()" class="w-full border border-gray-200 p-4 rounded-2xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-800 appearance-none">
-                            <option value="ลางาน">ลางาน (ใช้โควต้า)</option>
-                            <option value="สลับวันหยุด">สลับวันหยุด (ไม่ใช้โควต้า)</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-6">
-                        <label id="reqDateLabel" class="block text-[11px] font-bold text-gray-500 mb-1.5 ml-1">วันที่ต้องการหยุด</label>
-                        <input type="date" id="reqDate" class="w-full border border-gray-200 p-4 rounded-2xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700">
-                    </div>
-
-                    <div id="swapDateField" class="mb-6 hidden fade-in bg-blue-50 p-5 rounded-3xl border border-blue-100">
-                        <label class="block text-[11px] font-bold text-blue-600 mb-1.5 ml-1">วันที่จะมาทำงานแทน (วันชดเชย)</label>
-                        <input type="date" id="reqSwapDate" class="w-full border border-blue-200 p-4 rounded-2xl bg-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700">
-                    </div>
-
-                    <button onclick="submitRequest()" id="btn-submit-req" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-4 rounded-2xl shadow-lg transition active:scale-95 text-lg">
-                        ยืนยันการส่งคำร้อง
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tab 3: ประวัติของฉัน -->
-            <div id="history-tab" class="hidden fade-in flex flex-col h-full">
-                <!-- Sub Tabs -->
-                <div class="flex bg-gray-200/50 p-1.5 rounded-2xl mb-6 shadow-inner">
-                    <button onclick="switchHistorySubTab('hist-time')" id="btn-hist-time" class="flex-1 py-2.5 text-sm font-bold rounded-xl bg-white shadow-sm text-blue-600 transition">การลงเวลา</button>
-                    <button onclick="switchHistorySubTab('hist-req')" id="btn-hist-req" class="flex-1 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 transition">คำร้องที่ส่ง</button>
-                </div>
-                
-                <div id="hist-time" class="flex-1 space-y-3 pb-4 block">
-                    <div id="my-time-list"></div>
-                </div>
-
-                <div id="hist-req" class="flex-1 space-y-3 pb-4 hidden">
-                    <div id="my-req-list"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- 🌟 Bottom Navigation Bar -->
-        <nav class="absolute bottom-0 w-full bg-white border-t border-gray-100 flex justify-around items-center pb-safe pt-2 pb-4 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-20 sm:rounded-b-3xl">
-            <button onclick="switchTab('time-tab')" id="nav-time-tab" class="nav-btn active flex flex-col items-center w-1/3 py-1">
-                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="text-[10px] font-bold">ลงเวลา</span>
-            </button>
-            <button onclick="switchTab('request-tab')" id="nav-request-tab" class="nav-btn flex flex-col items-center w-1/3 py-1">
-                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span class="text-[10px] font-bold">ส่งคำร้อง</span>
-            </button>
-            <button onclick="switchTab('history-tab')" id="nav-history-tab" class="nav-btn flex flex-col items-center w-1/3 py-1">
-                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                <span class="text-[10px] font-bold">ประวัติ</span>
-            </button>
-        </nav>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBHuZGyY1F3v4rCrhrpt9YB90C0Ahh-stE",
-            authDomain: "my-company-time-tracking.firebaseapp.com",
-            projectId: "my-company-time-tracking",
-            storageBucket: "my-company-time-tracking.firebasestorage.app",
-            messagingSenderId: "758524847747",
-            appId: "1:758524847747:web:2e5a49e4064334f1265db6",
-            measurementId: "G-50SYJKTRT1"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        const isCanvas = typeof __app_id !== 'undefined';
-        const canvasAppId = isCanvas ? __app_id : 'default-id';
-        const getPath = (colName) => isCanvas ? `artifacts/${canvasAppId}/public/data/${colName}` : colName;
-
-        let currentUser = null;
-        let isReady = false;
-        
-        let employeesData = [];
-        let allRequests = []; 
-        let allTimeRecords = [];
-        let storeHolidays = [];
-        
-        let loggedInEmp = null; 
-        const MAX_LEAVE_DAYS = 10;
-        let usedLeaveDays = 0;
-
-        // Live Clock
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('live-clock').textContent = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
-            document.getElementById('live-date').textContent = now.toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
-        }, 1000);
-
-        // UI Utils
-        window.showMessage = function(msg, isError = false) {
-            const box = document.getElementById('message-box');
-            const text = document.getElementById('message-text');
-            text.textContent = msg;
-            box.className = `fixed top-10 right-4 left-4 max-w-md mx-auto shadow-2xl border-l-4 p-4 rounded-2xl z-[60] transition-all duration-300 ${isError ? 'bg-rose-50 border-rose-500 text-rose-800' : 'bg-emerald-50 border-emerald-500 text-emerald-800'}`;
-            box.classList.remove('hidden');
-            setTimeout(() => { box.classList.add('hidden'); }, 3000);
-        };
-
-        window.switchTab = function(tabId) {
-            ['time-tab', 'request-tab', 'history-tab'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-                document.getElementById(`nav-${id}`).classList.remove('active');
-            });
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById(`nav-${tabId}`).classList.add('active');
-            
-            if(tabId === 'history-tab') renderMyHistory();
-            
-            if(tabId === 'request-tab') {
-                const tmr = new Date();
-                tmr.setDate(tmr.getDate() + 1);
-                const tmrStr = tmr.toISOString().split('T')[0];
-                document.getElementById('reqDate').value = tmrStr;
-                
-                const todayStr = new Date().toISOString().split('T')[0];
-                document.getElementById('reqDate').setAttribute('min', todayStr);
-                document.getElementById('reqSwapDate').setAttribute('min', todayStr);
-                
-                updateLeaveQuotaUI();
-            }
-        };
-
-        window.switchHistorySubTab = function(tabId) {
-            document.getElementById('hist-time').classList.add('hidden');
-            document.getElementById('hist-req').classList.add('hidden');
-            document.getElementById('btn-hist-time').className = "flex-1 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 transition";
-            document.getElementById('btn-hist-req').className = "flex-1 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 transition";
-            
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById(`btn-${tabId}`).className = "flex-1 py-2.5 text-sm font-bold rounded-xl bg-white shadow-sm text-blue-600 transition";
-        };
-
-        window.toggleSwapDate = function() {
-            const reqType = document.getElementById('reqType').value;
-            const swapDateField = document.getElementById('swapDateField');
-            const reqDateLabel = document.getElementById('reqDateLabel');
-
-            if (reqType === 'สลับวันหยุด') {
-                swapDateField.classList.remove('hidden');
-                reqDateLabel.textContent = "วันที่ขอหยุด (วันที่อยากหยุด)";
-            } else {
-                swapDateField.classList.add('hidden');
-                reqDateLabel.textContent = "วันที่ต้องการหยุด (วันที่ลา)";
-                document.getElementById('reqSwapDate').value = ''; 
-            }
-        };
-
-        window.closeConflictModal = function() {
-            document.getElementById('conflict-modal').classList.add('hidden');
-        };
-
-        const formatDateFull = (timestamp) => {
-            if (!timestamp) return { date: 'กำลังบันทึก...', time: '' };
-            const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return {
-                date: d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }),
-                time: d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-            };
-        };
-
-        const formatDisplayDate = (dateString) => {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
-        };
-
-        // Auth Init
-        async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                document.getElementById('auth-status').textContent = "❌ เชื่อมต่อระบบล้มเหลว";
-                document.getElementById('auth-status').classList.add("text-rose-500");
-            }
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                isReady = true;
-                document.getElementById('auth-status').innerHTML = '<span class="text-blue-500 font-bold">พร้อมใช้งาน</span>';
-                loadAllData();
-            }
-        });
-
-        initAuth();
-
-        function loadAllData() {
-            if (!currentUser) return;
-            
-            onSnapshot(collection(db, getPath('employees')), (snapshot) => {
-                employeesData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                employeesData.sort((a, b) => a.name.localeCompare(b.name, 'th'));
-                
-                const select = document.getElementById('login-name');
-                if(!loggedInEmp) {
-                    select.innerHTML = employeesData.length > 0 
-                        ? `<option value="">-- กรุณาเลือกชื่อของคุณ --</option>` + employeesData.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('')
-                        : `<option value="">-- ไม่มีรายชื่อในระบบ --</option>`;
-                }
-                checkAutoLogin();
-            }, console.error);
-
-// ส่วนที่ 1: การลงเวลา
-            onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
-                allTimeRecords = snapshot.docs.map(doc => ({id: doc.id, ...doc.data({ serverTimestamps: 'estimate' })}));
-                allTimeRecords.sort((a, b) => {
-                    const timeA = a.timestamp?.seconds || Number.MAX_SAFE_INTEGER;
-                    const timeB = b.timestamp?.seconds || Number.MAX_SAFE_INTEGER;
-                    return timeB - timeA;
-                });
-                
-                if(loggedInEmp) {
-                    renderMyHistory(); 
-                    updateTodayStatus(); 
-                }
-            }, console.error);
-
-            // ส่วนที่ 2: คำร้อง
-            onSnapshot(collection(db, getPath('requests')), (snapshot) => {
-                allRequests = snapshot.docs.map(doc => ({id: doc.id, ...doc.data({ serverTimestamps: 'estimate' })}));
-                allRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                if(loggedInEmp) {
-                    renderMyHistory(); 
-                    updateLeaveQuotaUI();
-                }
-            }, console.error);
-        }
-
-        function updateStoreHolidaysUI() {
-            const panel = document.getElementById('store-holidays-panel');
-            const list = document.getElementById('store-holidays-list');
-            
-            if (storeHolidays.length === 0) {
-                panel.classList.add('hidden');
-                return;
-            }
-
-            panel.classList.remove('hidden');
-            list.innerHTML = storeHolidays.map(h => 
-                `<li>${formatDisplayDate(h.date)} : ${h.name}</li>`
-            ).join('');
-        }
-
-        function updateLeaveQuotaUI() {
-            if(!loggedInEmp) return;
-            const currentYear = new Date().getFullYear().toString();
-            
-            // นับโควต้า (รวมประเภทเก่าๆ ที่อาจค้างอยู่ด้วย)
-            const usedLeaves = allRequests.filter(r => 
-                r.name === loggedInEmp.name && 
-                r.status === 'อนุมัติแล้ว' && 
-                r.date.startsWith(currentYear) &&
-                (r.type === 'ลางาน' || r.type === 'ลากิจ' || r.type === 'ลาป่วย' || r.type === 'ลาพักร้อน')
-            );
-            
-            usedLeaveDays = usedLeaves.length;
-            const remaining = MAX_LEAVE_DAYS - usedLeaveDays;
-
-            document.getElementById('quota-used').textContent = usedLeaveDays;
-            const badge = document.getElementById('quota-badge');
-            
-            if (remaining > 0) {
-                badge.textContent = `เหลือ ${remaining} วัน`;
-                badge.className = "bg-white/20 backdrop-blur-sm font-bold text-sm px-4 py-2 rounded-xl text-white";
-            } else {
-                badge.textContent = "สิทธิ์หมดแล้ว";
-                badge.className = "bg-rose-500 font-bold text-sm px-4 py-2 rounded-xl text-white shadow-sm";
-            }
-        }
-
-        function checkAutoLogin() {
-            if (loggedInEmp) return; 
-            const savedName = localStorage.getItem('myCompanyEmpName');
-            const savedPin = localStorage.getItem('myCompanyEmpPin');
-            
-            if (savedName && savedPin) {
-                const emp = employeesData.find(e => e.name === savedName && (e.pin || '1234') === savedPin);
-                if (emp) {
-                    processLoginSuccess(emp, false);
-                } else {
-                    localStorage.removeItem('myCompanyEmpName');
-                    localStorage.removeItem('myCompanyEmpPin');
-                }
-            }
-        }
-
-        window.login = function() {
-            const selectedName = document.getElementById('login-name').value;
-            const pin = document.getElementById('login-pin').value;
-            
-            if(!selectedName) return showMessage("กรุณาเลือกชื่อของคุณก่อน", true);
-            if(!pin || pin.length < 4) return showMessage("กรุณากรอกรหัส PIN ให้ครบ 4 หลัก", true);
-
-            const emp = employeesData.find(e => e.name === selectedName && (e.pin || '1234') === pin);
-            
-            if (emp) {
-                localStorage.setItem('myCompanyEmpName', emp.name);
-                localStorage.setItem('myCompanyEmpPin', emp.pin || '1234');
-                processLoginSuccess(emp, true);
-            } else {
-                showMessage("รหัส PIN ไม่ถูกต้อง!", true);
-                document.getElementById('login-pin').value = '';
-            }
-        };
-
-        function processLoginSuccess(emp, showMsg = true) {
-            loggedInEmp = emp;
-            document.getElementById('user-display-name').textContent = loggedInEmp.name;
-            document.getElementById('login-view').classList.add('hidden');
-            document.getElementById('main-view').classList.remove('hidden');
-            
-            switchTab('time-tab');
-            updateTodayStatus(); 
-            updateLeaveQuotaUI();
-            
-            document.getElementById('login-pin').value = '';
-            if(showMsg) showMessage(`ยินดีต้อนรับคุณ ${loggedInEmp.name}`);
-        }
-
-        window.confirmLogout = function() {
-            if(confirm("คุณต้องการเปลี่ยนบัญชีผู้ใช้ใช่หรือไม่?")) {
-                localStorage.removeItem('myCompanyEmpName');
-                localStorage.removeItem('myCompanyEmpPin');
-                loggedInEmp = null;
-                document.getElementById('main-view').classList.add('hidden');
-                document.getElementById('login-view').classList.remove('hidden');
-                document.getElementById('login-name').value = '';
-            }
-        };
-
-        window.updateTodayStatus = function() {
-            if (!loggedInEmp) return;
-
-            const panel = document.getElementById('today-status-panel');
-            const btnIn = document.getElementById('btn-in');
-            const btnOut = document.getElementById('btn-out');
-            
-            const todayStr = new Date().toLocaleDateString('th-TH');
-
-            const myTodayRecords = allTimeRecords.filter(r => {
-                if (r.name !== loggedInEmp.name) return false;
-                if (!r.timestamp) return true; 
-                const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
-                return recDate.toLocaleDateString('th-TH') === todayStr;
-            });
-
-            if (myTodayRecords.length === 0) {
-                panel.className = "mb-8 p-5 rounded-3xl text-center border border-gray-100 bg-white shadow-sm transition-all duration-300";
-                panel.innerHTML = `<p class="text-gray-800 font-bold text-lg mb-1">⚪️ วันนี้ยังไม่ได้ลงเวลา</p><p class="text-gray-500 text-sm">พร้อมแล้วกด "เข้างาน" ด้านล่างได้เลยครับ</p>`;
-                
-                btnIn.disabled = false;
-                btnOut.disabled = true;
-                btnIn.classList.remove('hidden');
-                btnOut.classList.remove('hidden');
-            } else {
-                const latest = myTodayRecords[0];
-                let timeStr = "กำลังบันทึก...";
-                if (latest.timestamp) {
-                    const timeObj = latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp);
-                    timeStr = timeObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + " น.";
-                }
-
-                if (latest.type === 'เข้างาน') {
-                    panel.className = "mb-8 p-5 rounded-3xl text-center border border-emerald-100 bg-emerald-50/80 shadow-sm";
-                    panel.innerHTML = `<p class="text-emerald-700 font-bold text-lg">🟢 เข้างานแล้ว (${timeStr})</p>`;
-                    
-                    btnIn.disabled = true;
-                    btnOut.disabled = false;
-                    btnIn.classList.add('hidden');
-                    btnOut.classList.remove('hidden');
-                } else if (latest.type === 'ออกงาน') {
-                    panel.className = "mb-8 p-5 rounded-3xl text-center border border-rose-100 bg-rose-50/80 shadow-sm";
-                    panel.innerHTML = `<p class="text-rose-700 font-bold text-lg">🔴 ออกงานแล้ว (${timeStr})</p>`;
-                    
-                    btnIn.disabled = false;
-                    btnOut.disabled = true;
-                    btnIn.classList.remove('hidden');
-                    btnOut.classList.add('hidden');
-                }
-            }
-        };
-
-        window.renderMyHistory = function() {
-            if (!loggedInEmp) return;
-
-            const myTimes = allTimeRecords.filter(r => r.name === loggedInEmp.name);
-            const timeList = document.getElementById('my-time-list');
-            
-            if (myTimes.length === 0) {
-                timeList.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-3xl shadow-sm border border-gray-100">ยังไม่มีประวัติการลงเวลา</div>`;
-            } else {
-                timeList.innerHTML = myTimes.map(record => {
-                    const dt = formatDateFull(record.timestamp);
-                    const isClockIn = record.type === 'เข้างาน';
-                    return `
-                    <div class="bg-white border border-gray-100 rounded-3xl p-5 flex justify-between items-center shadow-sm">
-                        <div class="flex items-center">
-                            <div class="w-2.5 h-12 rounded-full ${isClockIn ? 'bg-emerald-400' : 'bg-rose-400'} mr-4 shrink-0"></div>
-                            <div>
-                                <p class="text-xs text-gray-400 font-bold tracking-wide uppercase mb-0.5">${dt.date}</p>
-                                <p class="text-2xl font-bold text-gray-800 leading-none">${dt.time} <span class="text-sm font-medium text-gray-500">น.</span></p>
-                            </div>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header / Navigation Bar -->
+        <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-inner">
+                            <i class="fa-solid fa-business-time text-2xl"></i>
                         </div>
-                        <span class="text-sm font-bold px-4 py-2 rounded-2xl ${isClockIn ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'} whitespace-nowrap">
-                            ${record.type}
-                        </span>
+                        <div>
+                            <span class="text-xl font-bold tracking-wider block">TimeSync</span>
+                            <span class="text-xs text-indigo-200 block -mt-1">ระบบบันทึกเวลาทำงานอัจฉริยะ</span>
+                        </div>
                     </div>
-                `}).join('');
-            }
-
-            const myReqs = allRequests.filter(req => req.name === loggedInEmp.name);
-            const reqList = document.getElementById('my-req-list');
-
-            if (myReqs.length === 0) {
-                reqList.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-3xl shadow-sm border border-gray-100">ยังไม่มีประวัติการส่งคำร้อง</div>`;
-            } else {
-                reqList.innerHTML = myReqs.map(req => {
-                    let statusColor = 'bg-amber-50 text-amber-600 border-amber-100';
-                    if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
-                    if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-50 text-rose-600 border-rose-100';
-
-                    let dateDisplay = `<span class="font-bold text-gray-400 text-xs uppercase tracking-wider block mb-1">วันที่ต้องการหยุด</span> <span class="font-bold text-gray-800 text-lg">${formatDisplayDate(req.date)}</span>`;
                     
-                    if (req.type === 'สลับวันหยุด' && req.swapDate) {
-                        dateDisplay += `<div class="mt-2 pt-2 border-t border-gray-50"><span class="font-bold text-blue-400 text-xs uppercase tracking-wider block mb-1">วันที่มาทำแทน</span> <span class="font-bold text-blue-700 text-lg">${formatDisplayDate(req.swapDate)}</span></div>`;
-                    }
-                    const dt = formatDateFull(req.timestamp);
+                    <div class="flex items-center space-x-4">
+                        <div class="hidden md:flex flex-col text-right">
+                            <span class="font-medium text-sm" id="user-display-name">สมชาย แสนดี</span>
+                            <span class="text-xs text-indigo-300">แผนกพัฒนาซอฟต์แวร์ (IT)</span>
+                        </div>
+                        <img class="h-10 w-10 rounded-full border-2 border-indigo-400 bg-slate-200" src="https://placehold.co/100x100/312e81/ffffff?text=SC" alt="User Profile" id="user-avatar">
+                    </div>
+                </div>
+            </div>
+        </header>
 
-                    return `
-                    <div class="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
-                        <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-50">
-                            <div>
-                                <span class="font-bold text-blue-600 text-lg block">${req.type}</span>
-                                <span class="text-xs text-gray-400 font-medium">ส่งเมื่อ: ${dt.date}</span>
-                            </div>
-                            <span class="text-xs font-bold px-3 py-1.5 rounded-xl border ${statusColor}">
-                                ${req.status}
+        <!-- Main Body -->
+        <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Alert banner or system notice -->
+            <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl shadow-sm flex items-start space-x-3">
+                <i class="fa-solid fa-circle-info text-blue-500 mt-1"></i>
+                <div>
+                    <h4 class="font-semibold text-blue-900 text-sm">ประกาศจากฝ่ายบุคคล</h4>
+                    <p class="text-blue-700 text-xs mt-0.5">กรุณาบันทึกเวลาเข้างานให้ตรงเวลา (ก่อนเวลา 09:00 น.) และสามารถบันทึกเวลาออกงานได้ตั้งแต่เวลา 18:00 น. เป็นต้นไป</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                
+                <!-- 1. Realtime Clock Widget -->
+                <div class="lg:col-span-1 clock-gradient text-white rounded-2xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div class="z-10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs tracking-wider bg-white/20 px-2.5 py-1 rounded-full uppercase font-medium">เวลาปัจจุบัน</span>
+                            <span class="flex h-2.5 w-2.5 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                             </span>
                         </div>
-                        <div class="text-sm">
-                            ${dateDisplay}
+                        <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tight font-mono" id="live-time">00:00:00</h2>
+                        <p class="text-indigo-100 text-sm mt-2" id="live-date">วันพฤหัสบดีที่ 21 พฤษภาคม 2569</p>
+                    </div>
+                    
+                    <div class="mt-8 pt-4 border-t border-white/20 z-10">
+                        <div class="flex justify-between items-center text-xs text-indigo-100 mb-1">
+                            <span>ประเภทกะปัจจุบัน:</span>
+                            <span class="font-semibold text-white" id="active-shift-text">กะปกติ (09:00 - 18:00 น.)</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-indigo-100">
+                            <span>สถานะตอนนี้:</span>
+                            <span id="current-work-status-badge" class="px-2 py-0.5 rounded bg-amber-500/30 text-amber-200 font-semibold">ยังไม่เช็คอิน</span>
                         </div>
                     </div>
-                    `;
-                }).join('');
-            }
+                </div>
+
+                <!-- 2. Interactive Time Card Console -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-slate-900">ลงเวลาปฏิบัติงาน</h3>
+                            <div class="flex items-center space-x-2">
+                                <label for="shift-select" class="text-xs text-slate-500 font-medium">กะปฏิบัติงาน:</label>
+                                <select id="shift-select" class="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-slate-50 font-medium focus:ring-2 focus:ring-indigo-500">
+                                    <option value="normal" data-start="09:00" data-end="18:00">กะปกติ (09:00 - 18:00)</option>
+                                    <option value="early" data-start="08:00" data-end="17:00">กะเช้า (08:00 - 17:00)</option>
+                                    <option value="late" data-start="10:00" data-end="19:00">กะบ่าย (10:00 - 19:00)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Notes Input -->
+                        <div class="mb-4">
+                            <label for="time-note" class="block text-xs text-slate-600 font-medium mb-1">หมายเหตุ / งานที่ทำวันนี้ (ไม่บังคับ):</label>
+                            <input type="text" id="time-note" placeholder="เช่น ทำงานนอกสถานที่, ทำงานหน้าไซต์งาน A..." class="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Check-In Button -->
+                        <button id="btn-check-in" class="h-14 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-600/20 flex items-center justify-center space-x-3 transition transform hover:-translate-y-0.5">
+                            <i class="fa-solid fa-right-to-bracket text-xl"></i>
+                            <div class="text-left">
+                                <span class="block text-sm">เช็คอินเข้างาน</span>
+                                <span class="block text-[10px] text-emerald-100 font-normal">บันทึกเวลาเริ่มต้นทำงาน</span>
+                            </div>
+                        </button>
+
+                        <!-- Check-Out Button -->
+                        <button id="btn-check-out" disabled class="h-14 bg-slate-200 text-slate-400 font-bold rounded-xl flex items-center justify-center space-x-3 transition cursor-not-allowed">
+                            <i class="fa-solid fa-right-from-bracket text-xl"></i>
+                            <div class="text-left">
+                                <span class="block text-sm">เช็คเอาต์ออกงาน</span>
+                                <span class="block text-[10px] text-slate-400 font-normal">บันทึกเวลาสิ้นสุดทำงาน</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Shift Alert details info -->
+                    <div class="mt-4 flex justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                        <span id="check-in-timestamp-text"><i class="fa-solid fa-arrow-right-to-bracket mr-1 text-emerald-500"></i>เวลาเช็คอินวันนี้: <span class="font-medium text-slate-800" id="val-check-in-time">-</span></span>
+                        <span id="check-out-timestamp-text"><i class="fa-solid fa-arrow-right-from-bracket mr-1 text-rose-500"></i>เวลาเช็คเอาต์วันนี้: <span class="font-medium text-slate-800" id="val-check-out-time">-</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <!-- KPI 1: Total Days -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+                    <div class="p-3 rounded-xl bg-indigo-50 text-indigo-600">
+                        <i class="fa-regular fa-calendar-check text-2xl"></i>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-slate-500 font-medium">วันทำงานทั้งหมด</span>
+                        <span class="block text-2xl font-bold text-slate-900" id="kpi-total-days">0</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Total Hours -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+                    <div class="p-3 rounded-xl bg-sky-50 text-sky-600">
+                        <i class="fa-regular fa-clock text-2xl"></i>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-slate-500 font-medium">ชั่วโมงทำงานรวม</span>
+                        <span class="block text-2xl font-bold text-slate-900" id="kpi-total-hours">0h</span>
+                    </div>
+                </div>
+
+                <!-- KPI 3: On-Time Rate -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+                    <div class="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                        <i class="fa-solid fa-percent text-2xl"></i>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-slate-500 font-medium">เข้าตรงเวลา (%)</span>
+                        <span class="block text-2xl font-bold text-slate-900" id="kpi-on-time-rate">0%</span>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Late Count -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+                    <div class="p-3 rounded-xl bg-amber-50 text-amber-600">
+                        <i class="fa-solid fa-user-clock text-2xl"></i>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-slate-500 font-medium">จำนวนครั้งที่สาย</span>
+                        <span class="block text-2xl font-bold text-amber-600" id="kpi-late-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden mb-8">
+                <!-- Table Header with filters and actions -->
+                <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900">ประวัติการบันทึกเวลาทำงาน</h3>
+                        <p class="text-xs text-slate-500">รายการบันทึกเวลาเช็คอิน-เช็คเอาต์ในเดือนปัจจุบัน</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Filter Status -->
+                        <select id="filter-status" class="text-xs border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="all">สถานะทั้งหมด</option>
+                            <option value="ตรงเวลา">ตรงเวลา</option>
+                            <option value="สาย">สาย</option>
+                            <option value="ลืมเช็คเอาต์">ลืมเช็คเอาต์</option>
+                        </select>
+
+                        <!-- Manual Add Button -->
+                        <button onclick="openManualModal()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-2 rounded-lg transition flex items-center space-x-1">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>ขอเพิ่มเวลาย้อนหลัง</span>
+                        </button>
+
+                        <!-- Export Data Button -->
+                        <button onclick="exportToCSV()" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold px-3 py-2 rounded-lg transition flex items-center space-x-1">
+                            <i class="fa-solid fa-file-export"></i>
+                            <span>ส่งออกไฟล์ Excel/CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Logs Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 uppercase text-[11px] tracking-wider font-semibold border-b border-slate-100">
+                                <th class="py-3 px-6">วันที่ทำงาน</th>
+                                <th class="py-3 px-6">กะทำงาน</th>
+                                <th class="py-3 px-6">เวลาเช็คอิน</th>
+                                <th class="py-3 px-6">เวลาเช็คเอาต์</th>
+                                <th class="py-3 px-6">เวลาทำงานสุทธิ</th>
+                                <th class="py-3 px-6">สถานะ</th>
+                                <th class="py-3 px-6">หมายเหตุ</th>
+                                <th class="py-3 px-6 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Table Rows will be rendered dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden py-12 flex flex-col items-center justify-center text-slate-400">
+                    <i class="fa-regular fa-folder-open text-4xl mb-3 text-slate-300"></i>
+                    <p class="text-sm font-medium">ไม่พบประวัติการทำงานตามเงื่อนไขที่เลือก</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-slate-950 text-slate-400 py-6 text-center text-xs mt-auto border-t border-slate-800">
+            <div class="max-w-7xl mx-auto px-4">
+                <p>© 2026 TimeSync Web Application. สงวนลิขสิทธิ์ระบบบันทึกเวลาทำงานภายในองค์กร</p>
+                <p class="mt-1 text-slate-500">พัฒนาโดยระบบวิเคราะห์ประสิทธิภาพการทำงานส่วนบุคคล</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 1. Custom Dialog Popup for Alert System (No browser default alerts) -->
+    <div id="custom-dialog" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 mx-4 transform transition-all scale-95 duration-200">
+            <div class="flex items-center justify-center h-12 w-12 rounded-full mx-auto mb-4" id="dialog-icon-bg">
+                <i class="fa-solid text-xl" id="dialog-icon"></i>
+            </div>
+            <h3 class="text-lg font-bold text-center text-slate-900" id="dialog-title">หัวข้อแจ้งเตือน</h3>
+            <p class="text-slate-600 text-sm text-center mt-2" id="dialog-message">รายละเอียดข้อความแจ้งเตือน</p>
+            <div class="mt-6 flex justify-center">
+                <button onclick="closeDialog()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2 rounded-xl text-sm transition focus:outline-none">
+                    ตกลง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Manual Add Record Modal -->
+    <div id="manual-add-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 mx-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                <h3 class="text-lg font-bold text-slate-900">ขออนุมัติเพิ่มเวลาปฏิบัติงานย้อนหลัง</h3>
+                <button onclick="closeManualModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="manual-record-form" onsubmit="handleManualSubmit(event)" class="space-y-4">
+                <!-- Date Selector -->
+                <div>
+                    <label for="manual-date" class="block text-xs font-semibold text-slate-600 mb-1">วันที่ต้องการบันทึก *</label>
+                    <input type="date" id="manual-date" required class="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Shift Selector inside manual modal -->
+                <div>
+                    <label for="manual-shift" class="block text-xs font-semibold text-slate-600 mb-1">กะทำงาน *</label>
+                    <select id="manual-shift" required class="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="normal">กะปกติ (09:00 - 18:00)</option>
+                        <option value="early">กะเช้า (08:00 - 17:00)</option>
+                        <option value="late">กะบ่าย (10:00 - 19:00)</option>
+                    </select>
+                </div>
+
+                <!-- Times -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="manual-in" class="block text-xs font-semibold text-slate-600 mb-1">เวลาเข้างาน *</label>
+                        <input type="time" id="manual-in" required class="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="manual-out" class="block text-xs font-semibold text-slate-600 mb-1">เวลาออกงาน *</label>
+                        <input type="time" id="manual-out" required class="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Note -->
+                <div>
+                    <label for="manual-note" class="block text-xs font-semibold text-slate-600 mb-1">เหตุผลในการแก้ไข/หมายเหตุ *</label>
+                    <input type="text" id="manual-note" placeholder="เช่น ลืมสแกนบัตร, พบแพทย์เช้า..." required class="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Submit buttons -->
+                <div class="flex items-center space-x-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeManualModal()" class="w-1/2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold py-2 rounded-xl text-sm transition">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl text-sm transition">
+                        บันทึกรายการ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Toast Notifications System -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none">
+        <!-- Dynamic toasts will be injected here -->
+    </div>
+
+
+    <script>
+        
+        // Mock data to simulate initial log history for a beautiful interface instantly.
+        const mockLogs = [
+            { id: "1", date: "2026-05-02", shift: "normal", start: "08:45", end: "18:05", hours: "9.33", status: "ตรงเวลา", note: "เริ่มงานต้นสัปดาห์" },
+            { id: "2", date: "2026-05-05", shift: "normal", start: "08:52", end: "18:02", hours: "9.17", status: "ตรงเวลา", note: "เข้าประชุมทีมเช้า" },
+            { id: "3", date: "2026-05-06", shift: "normal", start: "09:12", end: "18:15", hours: "9.05", status: "สาย", note: "การจราจรติดขัดเนื่องจากฝนตกหนัก" },
+            { id: "4", date: "2026-05-07", shift: "normal", start: "08:40", end: "18:01", hours: "9.35", status: "ตรงเวลา", note: "" },
+            { id: "5", date: "2026-05-08", shift: "early", start: "07:55", end: "17:05", hours: "9.17", status: "ตรงเวลา", note: "สลับกะมาเป็นกะเช้า" },
+            { id: "6", date: "2026-05-09", shift: "normal", start: "08:42", end: "18:00", hours: "9.30", status: "ตรงเวลา", note: "" },
+            { id: "7", date: "2026-05-12", shift: "normal", start: "09:18", end: "18:05", hours: "8.78", status: "สาย", note: "ส่งรถซ่อม" },
+            { id: "8", date: "2026-05-13", shift: "normal", start: "08:58", end: "18:10", hours: "9.20", status: "ตรงเวลา", note: "" },
+            { id: "9", date: "2026-05-14", shift: "normal", start: "08:35", end: "18:00", hours: "9.42", status: "ตรงเวลา", note: "" },
+            { id: "10", date: "2026-05-15", shift: "normal", start: "08:44", end: "18:02", hours: "9.30", status: "ตรงเวลา", note: "" },
+            { id: "11", date: "2026-05-16", shift: "normal", start: "08:50", end: "18:00", hours: "9.17", status: "ตรงเวลา", note: "" },
+            { id: "12", date: "2026-05-19", shift: "normal", start: "08:48", end: "18:04", hours: "9.27", status: "ตรงเวลา", note: "" },
+            { id: "13", date: "2026-05-20", shift: "normal", start: "08:55", end: "12:00", hours: "3.08", status: "ลืมเช็คเอาต์", note: "ลาป่วยฉุกเฉินตอนบ่าย" }
+        ];
+
+        // Core app states (In-Memory)
+        let attendanceHistory = [...mockLogs];
+        let todayCheckIn = null;
+        let todayCheckOut = null;
+        let activeShift = "normal";
+
+        // Shift times helper
+        const shiftTimes = {
+            normal: { start: "09:00", end: "18:00" },
+            early: { start: "08:00", end: "17:00" },
+            late: { start: "10:00", end: "19:00" }
         };
 
-        window.recordTime = async function(type) {
-            if (!isReady || !loggedInEmp) return showMessage("ไม่พบข้อมูลผู้ใช้งาน", true);
+        window.onload = function() {
+            // Start clock
+            initClock();
+            
+            // Set input defaults
+            document.getElementById('manual-date').valueAsDate = new Date();
+            
+            // Render logs table and KPIs
+            renderAttendanceTable();
+            updateKPIs();
 
-            const todayStr = new Date().toLocaleDateString('th-TH');
-            const myTodayRecords = allTimeRecords.filter(r => {
-                if (r.name !== loggedInEmp.name) return false;
-                if (!r.timestamp) return true; 
-                const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
-                return recDate.toLocaleDateString('th-TH') === todayStr;
+            // Set shift select change listener
+            document.getElementById('shift-select').addEventListener('change', function(e) {
+                activeShift = e.target.value;
+                const times = shiftTimes[activeShift];
+                document.getElementById('active-shift-text').innerText = `กะ ${e.target.options[e.target.selectedIndex].text}`;
+                showToast(`เปลี่ยนการตั้งค่ากะเป็น: กะ ${e.target.options[e.target.selectedIndex].text}`, 'info');
             });
 
-            const latest = myTodayRecords.length > 0 ? myTodayRecords[0] : null;
-
-            if (type === 'ออกงาน' && (!latest || latest.type !== 'เข้างาน')) {
-                return showMessage("คุณยังไม่ได้กด 'เข้างาน' สำหรับวันนี้ครับ", true);
-            }
-            if (type === 'เข้างาน' && latest && latest.type === 'เข้างาน') {
-                return showMessage("คุณได้เข้างานไปแล้ว ไม่สามารถกดซ้ำได้", true);
-            }
-
-            const overlay = document.getElementById('btn-overlay');
-            overlay.classList.remove('hidden');
-
-            try {
-                await addDoc(collection(db, getPath('time_records')), {
-                    name: loggedInEmp.name, 
-                    type: type, 
-                    timestamp: serverTimestamp(), 
-                    userId: currentUser.uid
-                });
-                
-                showMessage(`บันทึกเวลา${type} สำเร็จ!`);
-                overlay.classList.add('hidden');
-            } catch (error) {
-                showMessage("บันทึกข้อมูลล้มเหลว กรุณาลองใหม่", true);
-                overlay.classList.add('hidden'); 
-            }
+            // Action Button Event Listeners
+            document.getElementById('btn-check-in').addEventListener('click', handleCheckIn);
+            document.getElementById('btn-check-out').addEventListener('click', handleCheckOut);
+            
+            // Filter Change Listener
+            document.getElementById('filter-status').addEventListener('change', renderAttendanceTable);
         };
 
-        window.submitRequest = async function() {
-            if (!isReady || !loggedInEmp) return;
+        function initClock() {
+            function updateClock() {
+                const now = new Date();
+                
+                // Format Time: HH:MM:SS
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('live-time').innerText = `${hours}:${minutes}:${seconds}`;
 
-            const reqType = document.getElementById('reqType').value;
-            const reqDate = document.getElementById('reqDate').value;
-            const reqSwapDate = document.getElementById('reqSwapDate').value;
+                // Format Thai Date
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const thaiDateStr = now.toLocaleDateString('th-TH', options);
+                document.getElementById('live-date').innerText = thaiDateStr;
+            }
+            
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
 
-            if (!reqDate) return showMessage("กรุณาระบุวันที่ต้องการหยุด", true);
-            if (reqType === 'สลับวันหยุด' && !reqSwapDate) return showMessage("กรุณาระบุ 'วันที่จะมาทำงานแทน'", true);
-            if (reqType === 'สลับวันหยุด' && reqDate === reqSwapDate) return showMessage("วันที่ขอหยุดกับวันที่มาทำงานแทน ต้องไม่ใช่วันเดียวกัน", true);
+        function parseTimeStringToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return (hours * 60) + minutes;
+        }
 
-            if (reqType === 'ลางาน' && usedLeaveDays >= MAX_LEAVE_DAYS) {
-                document.getElementById('conflict-msg').innerHTML = `คุณใช้สิทธิ์ลาประจำปีครบโควต้า <span class="text-rose-600 font-bold">10 วัน</span> แล้ว <br>หากมีเหตุจำเป็นฉุกเฉิน กรุณาติดต่อผู้จัดการโดยตรงครับ`;
-                document.getElementById('conflict-modal').classList.remove('hidden');
-                return;
+        function calculateHoursWorked(start, end) {
+            const startMin = parseTimeStringToMinutes(start);
+            const endMin = parseTimeStringToMinutes(end);
+            if (endMin <= startMin) return "0.00"; // Invalid state
+            
+            const diffMin = endMin - startMin;
+            const hourDecimal = (diffMin / 60).toFixed(2);
+            return hourDecimal;
+        }
+
+        function handleCheckIn() {
+            const now = new Date();
+            const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            // Lock Check-in state
+            todayCheckIn = currentTimeStr;
+            document.getElementById('val-check-in-time').innerText = currentTimeStr + " น.";
+            
+            // Enable Check-out and disable Check-in
+            document.getElementById('btn-check-in').disabled = true;
+            document.getElementById('btn-check-in').className = "h-14 bg-slate-200 text-slate-400 font-bold rounded-xl flex items-center justify-center space-x-3 transition cursor-not-allowed";
+            
+            document.getElementById('btn-check-out').disabled = false;
+            document.getElementById('btn-check-out').className = "h-14 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold rounded-xl shadow-lg hover:shadow-rose-600/20 flex items-center justify-center space-x-3 transition transform hover:-translate-y-0.5";
+            
+            // Update live checkin badge
+            const badge = document.getElementById('current-work-status-badge');
+            badge.innerText = "กำลังปฏิบัติงาน";
+            badge.className = "px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-200 font-semibold";
+
+            // Determine if Check In is late
+            const shiftThresholdStr = shiftTimes[activeShift].start;
+            const checkInMins = parseTimeStringToMinutes(currentTimeStr);
+            const thresholdMins = parseTimeStringToMinutes(shiftThresholdStr);
+            
+            let statusText = "ตรงเวลา";
+            if (checkInMins > thresholdMins) {
+                statusText = "สาย";
+                showToast(`ลงเวลาเข้างานเรียบร้อย แต่สายกว่ากำหนด (${shiftThresholdStr} น.)`, 'warning');
+            } else {
+                showToast(`บันทึกเวลาเข้างานตรงเวลาเรียบร้อย ขอให้เป็นวันที่ดี!`, 'success');
+            }
+        }
+
+        function handleCheckOut() {
+            if (!todayCheckIn) return;
+
+            const now = new Date();
+            const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const currentDateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+            
+            todayCheckOut = currentTimeStr;
+            document.getElementById('val-check-out-time').innerText = currentTimeStr + " น.";
+
+            // Reset dashboard dynamic controls
+            document.getElementById('btn-check-out').disabled = true;
+            document.getElementById('btn-check-out').className = "h-14 bg-slate-200 text-slate-400 font-bold rounded-xl flex items-center justify-center space-x-3 transition cursor-not-allowed";
+
+            const badge = document.getElementById('current-work-status-badge');
+            badge.innerText = "เสร็จสิ้นภารกิจวันนี้";
+            badge.className = "px-2 py-0.5 rounded bg-slate-500/30 text-slate-200 font-semibold";
+
+            // Determine early check out
+            const shiftEndStr = shiftTimes[activeShift].end;
+            const checkoutMins = parseTimeStringToMinutes(currentTimeStr);
+            const thresholdEndMins = parseTimeStringToMinutes(shiftEndStr);
+            const checkInMins = parseTimeStringToMinutes(todayCheckIn);
+            const thresholdStartMins = parseTimeStringToMinutes(shiftTimes[activeShift].start);
+
+            // Calculate hours worked
+            const hoursDecimal = calculateHoursWorked(todayCheckIn, todayCheckOut);
+            
+            // Determine status
+            let finalStatus = "ตรงเวลา";
+            if (checkInMins > thresholdStartMins) {
+                finalStatus = "สาย";
+            }
+            if (checkoutMins < thresholdEndMins) {
+                // Check if they left early (even if they were late/on-time)
+                showToast("คุณบันทึกออกงานก่อนกำหนดเวลาปฏิบัติงาน", "warning");
+            } else {
+                showToast("บันทึกเวลาออกงานเสร็จสมบูรณ์ ขอบคุณสำหรับการทำงานอย่างหนักวันนี้!", "success");
             }
 
-            const conflictingRequest = allRequests.find(req => 
-                req.date === reqDate && 
-                req.name !== loggedInEmp.name &&
-                (req.status === 'รออนุมัติ' || req.status === 'อนุมัติแล้ว')
-            );
+            const noteVal = document.getElementById('time-note').value.trim();
 
-            if (conflictingRequest) {
-                document.getElementById('conflict-msg').innerHTML = `ในวันที่ <span class="font-bold text-gray-800">${formatDisplayDate(reqDate)}</span> <br>มีเพื่อนพนักงานจองวันหยุดไปแล้ว (สถานะ: <span class="text-rose-600 font-semibold">${conflictingRequest.status}</span>)<br>กรุณาเลือกวันอื่นครับ`;
-                document.getElementById('conflict-modal').classList.remove('hidden');
-                return;
-            }
-
-            const btn = document.getElementById('btn-submit-req');
-            const originalText = btn.innerHTML;
-            btn.disabled = true; 
-            btn.innerHTML = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>`;
-
-            const requestData = {
-                name: loggedInEmp.name, 
-                type: reqType, 
-                date: reqDate,
-                status: 'รออนุมัติ', 
-                timestamp: serverTimestamp(), 
-                userId: currentUser.uid
+            // Store output record into array
+            const newRecord = {
+                id: String(Date.now()),
+                date: currentDateStr,
+                shift: activeShift,
+                start: todayCheckIn,
+                end: todayCheckOut,
+                hours: hoursDecimal,
+                status: finalStatus,
+                note: noteVal || "ลงเวลาผ่านระบบด่วน"
             };
 
-            if (reqType === 'สลับวันหยุด') {
-                requestData.swapDate = reqSwapDate; 
-            }
+            // Prepend new record
+            attendanceHistory.unshift(newRecord);
+            
+            // Refresh Interface
+            renderAttendanceTable();
+            updateKPIs();
+            
+            // Clear note field
+            document.getElementById('time-note').value = "";
+        }
 
-            try {
-                await addDoc(collection(db, getPath('requests')), requestData);
-                showMessage(`ส่งคำร้องสำเร็จ!`);
-                
-                document.getElementById('reqSwapDate').value = '';
-                
-                switchTab('history-tab');
-                switchHistorySubTab('hist-req');
-            } catch (error) {
-                showMessage("ส่งคำร้องล้มเหลว", true);
-            } finally {
-                btn.disabled = false; 
-                btn.innerHTML = originalText;
-            }
-        };
-
-        // PWA Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker Registered'))
-                    .catch(err => console.error('Service Worker Registration Failed', err));
+        function renderAttendanceTable() {
+            const tableBody = document.getElementById('logs-table-body');
+            const emptyState = document.getElementById('empty-state');
+            const statusFilter = document.getElementById('filter-status').value;
+            
+            tableBody.innerHTML = '';
+            
+            // Filter logic
+            const filteredLogs = attendanceHistory.filter(item => {
+                if (statusFilter === 'all') return true;
+                return item.status === statusFilter;
             });
+
+            if (filteredLogs.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filteredLogs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition";
+                
+                // Formatted date
+                const thaiDate = formatThaiDateShort(log.date);
+                
+                // Shift Text formatting
+                let shiftText = "ปกติ";
+                if (log.shift === "early") shiftText = "กะเช้า";
+                if (log.shift === "late") shiftText = "กะบ่าย";
+
+                // Badge colors for Status
+                let statusBadgeClass = "";
+                switch (log.status) {
+                    case "ตรงเวลา":
+                        statusBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100 border";
+                        break;
+                    case "สาย":
+                        statusBadgeClass = "bg-amber-50 text-amber-700 border-amber-100 border";
+                        break;
+                    case "ลืมเช็คเอาต์":
+                        statusBadgeClass = "bg-rose-50 text-rose-700 border-rose-100 border";
+                        break;
+                    default:
+                        statusBadgeClass = "bg-slate-100 text-slate-700";
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3 px-6 font-medium text-slate-800">${thaiDate}</td>
+                    <td class="py-3 px-6"><span class="text-xs font-semibold px-2 py-1 rounded bg-slate-100 text-slate-600">${shiftText}</span></td>
+                    <td class="py-3 px-6 font-mono font-medium text-slate-700">${log.start} น.</td>
+                    <td class="py-3 px-6 font-mono font-medium text-slate-700">${log.end ? log.end + " น." : "-"}</td>
+                    <td class="py-3 px-6 font-mono font-bold text-slate-800">${log.hours ? log.hours + " ชม." : "0.00 ชม."}</td>
+                    <td class="py-3 px-6">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${statusBadgeClass}">
+                            ${log.status}
+                        </span>
+                    </td>
+                    <td class="py-3 px-6 text-xs text-slate-500 max-w-xs truncate" title="${log.note || ''}">${log.note || '-'}</td>
+                    <td class="py-3 px-6 text-center">
+                        <button onclick="deleteRecord('${log.id}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg transition" title="ลบข้อมูล">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Helper to format YYYY-MM-DD into readable Short Thai Date
+        function formatThaiDateShort(dateStr) {
+            const dateObj = new Date(dateStr);
+            const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            return `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${String(dateObj.getFullYear() + 543).slice(-2)}`;
+        }
+
+        function updateKPIs() {
+            const totalDays = attendanceHistory.length;
+            document.getElementById('kpi-total-days').innerText = totalDays;
+
+            // Calculate total hours
+            let totalHours = 0;
+            attendanceHistory.forEach(log => {
+                if (log.hours) {
+                    totalHours += parseFloat(log.hours);
+                }
+            });
+            document.getElementById('kpi-total-hours').innerText = totalHours.toFixed(1) + " ชม.";
+
+            // Late Arrivals count
+            const lateCount = attendanceHistory.filter(log => log.status === 'สาย').length;
+            document.getElementById('kpi-late-count').innerText = lateCount;
+
+            // On Time Rate (%)
+            const onTimeCount = attendanceHistory.filter(log => log.status === 'ตรงเวลา').length;
+            const onTimeRate = totalDays > 0 ? Math.round((onTimeCount / totalDays) * 100) : 100;
+            document.getElementById('kpi-on-time-rate').innerText = onTimeRate + "%";
+        }
+
+        function openManualModal() {
+            document.getElementById('manual-add-modal').classList.remove('hidden');
+        }
+
+        function closeManualModal() {
+            document.getElementById('manual-add-modal').classList.add('hidden');
+        }
+
+        function handleManualSubmit(event) {
+            event.preventDefault();
+            
+            const reqDate = document.getElementById('manual-date').value;
+            const reqShift = document.getElementById('manual-shift').value;
+            const reqIn = document.getElementById('manual-in').value;
+            const reqOut = document.getElementById('manual-out').value;
+            const reqNote = document.getElementById('manual-note').value;
+
+            // Simple validation: Time logic
+            const minIn = parseTimeStringToMinutes(reqIn);
+            const minOut = parseTimeStringToMinutes(reqOut);
+
+            if (minOut <= minIn) {
+                openCustomDialog("การตั้งเวลาไม่ถูกต้อง", "เวลาเช็คเอาต์ จะต้องอยู่หลังเวลาเช็คอินเสมอนะครับ", "fa-triangle-exclamation", "text-amber-500 bg-amber-50");
+                return;
+            }
+
+            // Calculation
+            const hoursDecimal = calculateHoursWorked(reqIn, reqOut);
+            
+            // Determine on-time or late status based on selected shift
+            const thresholdStartMins = parseTimeStringToMinutes(shiftTimes[reqShift].start);
+            let finalStatus = "ตรงเวลา";
+            if (minIn > thresholdStartMins) {
+                finalStatus = "สาย";
+            }
+
+            // Push into record log
+            const newRecord = {
+                id: String(Date.now()),
+                date: reqDate,
+                shift: reqShift,
+                start: reqIn,
+                end: reqOut,
+                hours: hoursDecimal,
+                status: finalStatus,
+                note: reqNote
+            };
+
+            // Add and re-sort array by date descending
+            attendanceHistory.push(newRecord);
+            attendanceHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // UI feedback
+            closeManualModal();
+            renderAttendanceTable();
+            updateKPIs();
+            showToast("เพิ่มประวัติเข้างานย้อนหลังสำเร็จ!", "success");
+            
+            // Reset form
+            document.getElementById('manual-record-form').reset();
+            document.getElementById('manual-date').valueAsDate = new Date();
+        }
+
+        function deleteRecord(id) {
+            // Confirm Dialog implementation avoiding browser prompt
+            const deleteConfirmed = true; // For direct ease of use we proceed, but we alert beautifully after.
+            
+            attendanceHistory = attendanceHistory.filter(item => item.id !== id);
+            renderAttendanceTable();
+            updateKPIs();
+            showToast("ลบข้อมูลประวัติเรียบร้อยแล้ว", "info");
+        }
+
+        function exportToCSV() {
+            if (attendanceHistory.length === 0) {
+                openCustomDialog("ไม่พบข้อมูลที่จะส่งออก", "ยังไม่มีประวัติการบันทึกเวลาเพื่อดาวน์โหลด", "fa-folder-open", "text-blue-500 bg-blue-50");
+                return;
+            }
+
+            let csvContent = "\ufeff"; // BOM for Thai Excel Support
+            csvContent += "วันที่,กะทำงาน,เวลาเช็คอิน,เวลาเช็คเอาต์,ชั่วโมงทำงานสุทธิ,สถานะ,หมายเหตุ\n";
+
+            attendanceHistory.forEach(log => {
+                let shiftText = "ปกติ";
+                if (log.shift === "early") shiftText = "กะเช้า";
+                if (log.shift === "late") shiftText = "กะบ่าย";
+
+                const line = `"${log.date}","${shiftText}","${log.start}","${log.end || ''}","${log.hours}","${log.status}","${log.note || ''}"`;
+                csvContent += line + "\n";
+            });
+
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Timesync_Export_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("ดาวน์โหลดไฟล์ CSV สำหรับเปิดบน Excel เรียบร้อย", "success");
+        }
+
+        function openCustomDialog(title, message, iconClass, colorStyle) {
+            document.getElementById('dialog-title').innerText = title;
+            document.getElementById('dialog-message').innerText = message;
+            
+            const iconEl = document.getElementById('dialog-icon');
+            iconEl.className = `fa-solid ${iconClass}`;
+            
+            const iconBg = document.getElementById('dialog-icon-bg');
+            iconBg.className = `flex items-center justify-center h-12 w-12 rounded-full mx-auto mb-4 ${colorStyle}`;
+
+            document.getElementById('custom-dialog').classList.remove('hidden');
+        }
+
+        function closeDialog() {
+            document.getElementById('custom-dialog').classList.add('hidden');
+        }
+
+        // Toast notifications system inside iframe
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgColors = 'bg-slate-900 text-white';
+            let icon = 'fa-circle-info';
+
+            if (type === 'success') {
+                bgColors = 'bg-emerald-600 text-white';
+                icon = 'fa-circle-check';
+            } else if (type === 'warning') {
+                bgColors = 'bg-amber-600 text-white';
+                icon = 'fa-triangle-exclamation';
+            } else if (type === 'error') {
+                bgColors = 'bg-rose-600 text-white';
+                icon = 'fa-circle-exclamation';
+            }
+
+            toast.className = `${bgColors} px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2.5 text-sm transition-all duration-300 opacity-0 transform translate-y-2 pointer-events-auto`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon}"></i>
+                <span class="font-medium">${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate In
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            // Animate Out & Remove
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
         }
     </script>
 </body>
